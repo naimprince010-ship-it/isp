@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { tickets } from '../api/client';
+import { DEMO_TICKETS } from '../data/demoData';
 import './Dashboard.css';
 
 type Ticket = { id: string; subject: string; description: string; status: string; createdAt: string };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { admin } from '../api/client';
+import { admin, API_BASE } from '../api/client';
 import { DEMO_BTRC_PAYMENT_LOG, DEMO_BTRC_USER_LIST } from '../data/demoData';
 import './Dashboard.css';
 
@@ -24,7 +24,7 @@ export default function BtrcReport() {
     const token = localStorage.getItem('token');
     if (!token) return;
     setExporting(true);
-    fetch(`/api/admin/reports/btrc/export?month=${month}&year=${year}&format=csv`, {
+    fetch(`${API_BASE}/admin/reports/btrc/export?month=${month}&year=${year}&format=csv`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => {

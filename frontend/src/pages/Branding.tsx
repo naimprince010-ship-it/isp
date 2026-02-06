@@ -4,7 +4,7 @@ import { DEMO_BRANDING } from '../data/demoData';
 import './Dashboard.css';
 
 export default function Branding() {
-  const [data, setData] = useState<{ logoUrl?: string; receiptHeader?: string; receiptFooter?: string; companyName?: string } | null>(null);
+  const [, setData] = useState<{ logoUrl?: string; receiptHeader?: string; receiptFooter?: string; companyName?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
   const [saving, setSaving] = useState(false);

@@ -13,7 +13,7 @@ export default function PayBill() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    customer.bills().then((v) => { const arr = (v || []).filter((b: any) => b.status === 'PENDING'); setBills(arr); setSelectedBill(arr[0]?.id ?? ''); setIsDemo(false); }).catch(() => { const pending = DEMO_MY_BILLS.filter((b: any) => b.status === 'PENDING'); setBills(pending); setSelectedBill(pending[0]?.id ?? ''); setIsDemo(true); }).finally(() => setLoading(false));
+    customer.bills().then((v) => { const arr = ((v || []) as { id: string; status: string; amount?: number }[]).filter((b) => b.status === 'PENDING'); setBills(arr); setSelectedBill(arr[0]?.id ?? ''); setIsDemo(false); }).catch(() => { const pending = DEMO_MY_BILLS.filter((b: any) => b.status === 'PENDING'); setBills(pending); setSelectedBill(pending[0]?.id ?? ''); setIsDemo(true); }).finally(() => setLoading(false));
   }, []);
 
   const bill = bills.find((b) => b.id === selectedBill);

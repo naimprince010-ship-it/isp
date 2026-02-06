@@ -1,5 +1,6 @@
 // Production (Railway/Render): set VITE_API_URL to backend URL e.g. https://your-backend.onrender.com
-const API = (import.meta.env.VITE_API_URL || '') + '/api';
+export const API_BASE = (import.meta.env.VITE_API_URL || '') + '/api';
+const API = API_BASE;
 
 function getToken(): string | null {
   return localStorage.getItem('token');
@@ -62,7 +63,7 @@ export const admin = {
   customerProfile: (id: string) => api<{ profile: unknown; bills: unknown[]; payments: unknown[]; usageLogs: unknown[]; tickets: unknown[] }>(`/admin/customers/${id}/profile`),
   customersExport: (params?: { status?: string; resellerId?: string; format?: 'csv' | 'pdf' | 'html' }) => {
     const q = new URLSearchParams(params as Record<string, string>).toString();
-    return fetch(`/api/admin/customers/export${q ? `?${q}` : ''}`, {
+    return fetch(`${API}/admin/customers/export${q ? `?${q}` : ''}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     }).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('Export failed'))));
   },
@@ -95,14 +96,14 @@ export const admin = {
   },
   billsExport: (params?: { status?: string; month?: number; year?: number; format?: 'csv' | 'pdf' | 'html' }) => {
     const q = new URLSearchParams(params as Record<string, string>).toString();
-    return fetch(`/api/admin/bills/export${q ? `?${q}` : ''}`, {
+    return fetch(`${API}/admin/bills/export${q ? `?${q}` : ''}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     }).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('Export failed'))));
   },
   extendBill: (billId: string, data: { dueDate?: string; extendDays?: number }) =>
     api(`/admin/bills/${billId}/extend`, { method: 'PATCH', body: JSON.stringify(data) }),
   getBillInvoice: (billId: string) =>
-    fetch(`/api/admin/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
+    fetch(`${API}/admin/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
   createPaymentLink: (billId: string, expiresInDays?: number) =>
     api<{ token: string; link: string; expiresAt: string }>(`/admin/bills/${billId}/payment-link`, { method: 'POST', body: JSON.stringify({ expiresInDays }) }),
   collectEmployee: (billId: string, data: { amount: number; method: string; trxId?: string; notes?: string }) =>
@@ -112,7 +113,7 @@ export const admin = {
   approvePendingPayment: (id: string, status: 'APPROVED' | 'REJECTED', notes?: string) =>
     api(`/admin/pending-payment-approvals/${id}`, { method: 'PATCH', body: JSON.stringify({ status, notes }) }),
   receiptPayment: (paymentId: string) =>
-    fetch(`/api/admin/receipt/payment/${paymentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
+    fetch(`${API}/admin/receipt/payment/${paymentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
   sendReceipt: (paymentId: string) =>
     api<{ ok: boolean }>(`/admin/payments/${paymentId}/send-receipt`, { method: 'POST' }),
   verifyPayment: (method: string, trxId: string, amount: number) =>
@@ -146,7 +147,7 @@ export const reseller = {
   },
   billsExport: (params?: { status?: string; month?: number; year?: number; format?: 'csv' | 'pdf' | 'html' }) => {
     const q = new URLSearchParams(params as Record<string, string>).toString();
-    return fetch(`/api/reseller/bills/export${q ? `?${q}` : ''}`, {
+    return fetch(`${API}/reseller/bills/export${q ? `?${q}` : ''}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     }).then((r) => (r.ok ? r.blob() : Promise.reject(new Error('Export failed'))));
   },
@@ -155,11 +156,11 @@ export const reseller = {
   extendBill: (billId: string, data: { dueDate?: string; extendDays?: number }) =>
     api(`/reseller/bills/${billId}/extend`, { method: 'PATCH', body: JSON.stringify(data) }),
   getBillInvoice: (billId: string) =>
-    fetch(`/api/reseller/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
+    fetch(`${API}/reseller/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
   createPaymentLink: (billId: string, expiresInDays?: number) =>
     api<{ token: string; link: string; expiresAt: string }>(`/reseller/bills/${billId}/payment-link`, { method: 'POST', body: JSON.stringify({ expiresInDays }) }),
   receiptPayment: (paymentId: string) =>
-    fetch(`/api/reseller/receipt/payment/${paymentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
+    fetch(`${API}/reseller/receipt/payment/${paymentId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
   sendReceipt: (paymentId: string) =>
     api<{ ok: boolean }>(`/reseller/payments/${paymentId}/send-receipt`, { method: 'POST' }),
   recharges: () => api<unknown[]>('/reseller/recharges'),
@@ -172,7 +173,7 @@ export const customer = {
   bills: () => api<unknown[]>('/customer/bills'),
   payBill: (billId: string, amount: number, method: string, trxId: string) => api(`/customer/bills/${billId}/pay`, { method: 'POST', body: JSON.stringify({ amount, method, trxId }) }),
   getBillInvoice: (billId: string) =>
-    fetch(`/api/customer/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
+    fetch(`${API}/customer/bills/${billId}/invoice`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then((r) => (r.ok ? r.text() : Promise.reject(new Error('Failed')))),
   usage: (days?: number) => api<Array<{ date: string; totalBytes: number }>>(`/customer/usage?days=${days || 30}`),
   requests: () => api<unknown[]>('/customer/requests'),
   createRequest: (data: { type: 'PACKAGE_CHANGE' | 'STATUS_CHANGE'; requestedPackageId?: string; requestedStatus?: string }) =>

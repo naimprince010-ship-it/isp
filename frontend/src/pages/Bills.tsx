@@ -27,7 +27,7 @@ export default function Bills() {
   const [linkSubmitting, setLinkSubmitting] = useState(false);
 
   const load = () => {
-    reseller.bills(status || undefined).then((v) => { setList((v || []) as Bill[]); setIsDemo(false); }).catch(() => { setList(DEMO_BILLS as Bill[]); setIsDemo(true); }).finally(() => setLoading(false));
+    reseller.bills(status ? { status } : undefined).then((v) => { setList((v || []) as Bill[]); setIsDemo(false); }).catch(() => { setList(DEMO_BILLS as Bill[]); setIsDemo(true); }).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, [status]);
 

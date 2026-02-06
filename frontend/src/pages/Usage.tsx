@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { customer } from '../api/client';
+import { DEMO_USAGE } from '../data/demoData';
 import './Dashboard.css';
 
 export default function Usage() {
