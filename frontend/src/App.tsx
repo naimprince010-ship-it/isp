@@ -17,6 +17,8 @@ import AdminClients from './pages/AdminClients';
 import AdminClientProfile from './pages/AdminClientProfile';
 import NewClientRequests from './pages/NewClientRequests';
 import ScheduleRules from './pages/ScheduleRules';
+import AdminBilling from './pages/AdminBilling';
+import PendingApprovals from './pages/PendingApprovals';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -82,6 +84,8 @@ export default function App() {
             <Route path="clients/:id" element={<RequireAdmin><AdminClientProfile /></RequireAdmin>} />
             <Route path="new-client-requests" element={<RequireAdmin><NewClientRequests /></RequireAdmin>} />
             <Route path="schedule-rules" element={<RequireAdmin><ScheduleRules /></RequireAdmin>} />
+            <Route path="billing" element={<RequireAdmin><AdminBilling /></RequireAdmin>} />
+            <Route path="pending-approvals" element={<RequireAdmin><PendingApprovals /></RequireAdmin>} />
             <Route path="mikrotik" element={<RequireAdmin><MikroTik /></RequireAdmin>} />
             <Route path="btrc" element={<RequireAdmin><BtrcReport /></RequireAdmin>} />
             <Route path="sms" element={<RequireAdmin><SMS /></RequireAdmin>} />

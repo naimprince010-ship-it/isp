@@ -19,6 +19,8 @@ export default function Layout() {
       { label: 'Clients', path: '/clients' },
       { label: 'New Client Requests', path: '/new-client-requests' },
       { label: 'Schedule Rules', path: '/schedule-rules' },
+      { label: 'Billing', path: '/billing' },
+      { label: 'Pending Approvals', path: '/pending-approvals' },
       { label: 'MikroTik', path: '/mikrotik' },
       { label: 'BTRC Report', path: '/btrc' },
       { label: 'Upstream (Summit)', path: '/upstream' },
