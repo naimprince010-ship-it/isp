@@ -13,6 +13,10 @@ import SMS from './pages/SMS';
 import Reports from './pages/Reports';
 import Upstream from './pages/Upstream';
 import Inventory from './pages/Inventory';
+import AdminClients from './pages/AdminClients';
+import AdminClientProfile from './pages/AdminClientProfile';
+import NewClientRequests from './pages/NewClientRequests';
+import ScheduleRules from './pages/ScheduleRules';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -74,6 +78,10 @@ export default function App() {
             <Route index element={<DashboardByRole />} />
             <Route path="resellers" element={<RequireAdmin><Resellers /></RequireAdmin>} />
             <Route path="packages" element={<RequireAdmin><Packages /></RequireAdmin>} />
+            <Route path="clients" element={<RequireAdmin><AdminClients /></RequireAdmin>} />
+            <Route path="clients/:id" element={<RequireAdmin><AdminClientProfile /></RequireAdmin>} />
+            <Route path="new-client-requests" element={<RequireAdmin><NewClientRequests /></RequireAdmin>} />
+            <Route path="schedule-rules" element={<RequireAdmin><ScheduleRules /></RequireAdmin>} />
             <Route path="mikrotik" element={<RequireAdmin><MikroTik /></RequireAdmin>} />
             <Route path="btrc" element={<RequireAdmin><BtrcReport /></RequireAdmin>} />
             <Route path="sms" element={<RequireAdmin><SMS /></RequireAdmin>} />
