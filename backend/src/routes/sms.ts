@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireAdmin } from '../middleware/auth.js';
@@ -9,7 +9,7 @@ const router = Router();
 router.use(authMiddleware);
 router.use(requireAdmin);
 
-router.post('/send', [body('phone').trim().notEmpty(), body('message').trim().notEmpty(), body('purpose').optional().trim()], async (req, res, next) => {
+router.post('/send', [body('phone').trim().notEmpty(), body('message').trim().notEmpty(), body('purpose').optional().trim()], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -20,7 +20,7 @@ router.post('/send', [body('phone').trim().notEmpty(), body('message').trim().no
   }
 });
 
-router.get('/logs', async (req, res, next) => {
+router.get('/logs', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
     const logs = await prisma.smsLog.findMany({

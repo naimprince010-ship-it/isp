@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireCustomer, requireAdmin, type AuthRequest } from '../middleware/auth.js';
@@ -8,7 +8,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // Customer: create ticket
-router.post('/', requireCustomer, [body('subject').trim().notEmpty(), body('description').trim().notEmpty()], async (req: AuthRequest, res, next) => {
+router.post('/', requireCustomer, [body('subject').trim().notEmpty(), body('description').trim().notEmpty()], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);

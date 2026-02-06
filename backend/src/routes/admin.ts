@@ -64,7 +64,7 @@ router.post('/bills/:billId/collect-employee', requireRole('ADMIN', 'EMPLOYEE'),
         data: { status: newStatus, ...(newStatus === 'PAID' && { paidAt: new Date() }) },
       }),
       ...(newStatus === 'PAID' ? [prisma.customerProfile.update({ where: { id: bill.customerId }, data: { status: 'ACTIVE' } })] : []),
-    ]);
+    ] as any);
     const updated = await prisma.bill.findUnique({ where: { id: billId }, include: { payments: true } });
     res.status(201).json(updated);
   } catch (e) {
@@ -146,7 +146,7 @@ router.patch('/pending-payment-approvals/:id', requireAdmin, [
         data: { status: 'APPROVED', approvedBy: req.user!.id, approvedAt: new Date(), notes: notes || null },
       }),
       ...(newStatus === 'PAID' ? [prisma.customerProfile.update({ where: { id: bill.customerId }, data: { status: 'ACTIVE' } })] : []),
-    ]);
+    ] as any);
     res.json({ ok: true, message: 'Approved and payment applied.' });
   } catch (e) {
     next(e);

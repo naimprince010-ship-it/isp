@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Response, type NextFunction } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
@@ -351,8 +351,8 @@ router.post(
         ...(newStatus === 'PAID' && { paidAt: new Date() }),
       };
       if (req.body.discountAmount != null) billUpdateData.discountAmount = discountAmount;
-      const ops: Promise<unknown>[] = [
-        prisma.payment.create({
+      await prisma.$transaction(async (tx) => {
+        await tx.payment.create({
           data: {
             billId: bill.id,
             customerId: bill.customer.userId,
@@ -362,34 +362,31 @@ router.post(
             collectedBy: req.user!.id,
             notes: req.body.notes || null,
           },
-        }),
-        ...(useAdvance.gt(0)
-          ? [
-              prisma.payment.create({
-                data: {
-                  billId: bill.id,
-                  customerId: bill.customer.userId,
-                  amount: useAdvance,
-                  method: 'CASH',
-                  collectedBy: req.user!.id,
-                  notes: 'Advance applied',
-                },
-              }),
-            ]
-          : []),
-        prisma.bill.update({
+        });
+        if (useAdvance.gt(0)) {
+          await tx.payment.create({
+            data: {
+              billId: bill.id,
+              customerId: bill.customer.userId,
+              amount: useAdvance,
+              method: 'CASH',
+              collectedBy: req.user!.id,
+              notes: 'Advance applied',
+            },
+          });
+        }
+        await tx.bill.update({
           where: { id: bill.id },
           data: billUpdateData,
-        }),
-        prisma.customerProfile.update({
+        });
+        await tx.customerProfile.update({
           where: { id: bill.customerId },
           data: {
             ...(newStatus === 'PAID' && { status: 'ACTIVE' }),
             advanceBalance: newAdvance,
           },
-        }),
-      ];
-      await prisma.$transaction(ops);
+        });
+      });
       if (req.body.sendReceipt === true) {
         try {
           const { sendSms } = await import('../services/sms.js');
@@ -415,7 +412,7 @@ router.post(
 router.patch('/bills/:id/extend', [
   body('dueDate').optional().isISO8601(),
   body('extendDays').optional().isInt({ min: 1, max: 365 }).toInt(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -443,13 +440,19 @@ router.patch('/bills/:id/extend', [
 });
 
 // Single bill invoice (printable HTML) – reseller: own customers only
-router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
+router.get('/bills/:id/invoice', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const bill = await prisma.bill.findFirst({
       where: { id: req.params.id, customer: { resellerId } },
       include: {
-        customer: { include: { user: true, reseller: { include: { user: true, companyName: true, receiptHeader: true, receiptFooter: true } }, package: true } },
+        customer: {
+          include: {
+            user: true,
+            reseller: { select: { companyName: true, receiptHeader: true, receiptFooter: true } },
+            package: true,
+          },
+        },
         package: true,
         payments: true,
       },
@@ -457,9 +460,9 @@ router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
     if (!bill) throw new AppError(404, 'Bill not found');
     const discount = Number((bill as any).discountAmount ?? 0);
     const total = Number(bill.amount) - discount;
-    const paid = bill.payments.reduce((s, p) => s + Number(p.amount), 0);
+    const paid = (bill as any).payments.reduce((s: number, p: { amount: Prisma.Decimal }) => s + Number(p.amount), 0);
     const due = Math.max(0, total - paid);
-    const resellerProfile = bill.customer?.reseller as any;
+    const resellerProfile = (bill as any).customer?.reseller;
     const header = resellerProfile?.receiptHeader ?? resellerProfile?.companyName ?? 'ISP';
     const footer = resellerProfile?.receiptFooter ?? 'Thank you';
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${bill.id}</title><style>body{font-family:sans-serif;max-width:400px;margin:1em}table{width:100%;border-collapse:collapse}th,td{border:1px solid #333;padding:6px}.r{text-align:right}</style></head><body>
@@ -488,7 +491,7 @@ ${discount ? `<tr><td>Discount</td><td class="r">- BDT ${discount}</td></tr>` : 
 // Generate payment link (reseller: own customers only)
 router.post('/bills/:id/payment-link', [
   body('expiresInDays').optional().isInt({ min: 1, max: 90 }).toInt(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -665,20 +668,20 @@ router.get('/bills/export', async (req: AuthRequest, res, next) => {
 });
 
 // Money receipt (printable HTML – pocket printer or browser print)
-router.get('/receipt/payment/:paymentId', async (req: AuthRequest, res, next) => {
+router.get('/receipt/payment/:paymentId', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const paymentId = req.params.paymentId;
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        bill: { include: { package: true, customer: { include: { user: true, reseller: true } } } },
+        bill: { include: { package: true, customer: { include: { user: true, reseller: { select: { companyName: true, receiptHeader: true, receiptFooter: true } } } } } },
         customer: { select: { name: true, phone: true } },
       },
     });
     if (!payment?.bill) throw new AppError(404, 'Payment not found');
-    if (payment.bill.customer.resellerId !== resellerId) throw new AppError(403, 'Not your customer');
-    const b = payment.bill;
+    const b = (payment as any).bill;
+    if (b.customer?.resellerId !== resellerId) throw new AppError(403, 'Not your customer');
     const reseller = b.customer?.reseller as any;
     const header = reseller?.receiptHeader ?? reseller?.companyName ?? 'ISP';
     const footer = reseller?.receiptFooter ?? 'Thank you';
@@ -702,22 +705,23 @@ router.get('/receipt/payment/:paymentId', async (req: AuthRequest, res, next) =>
 });
 
 // Send money receipt to client via SMS
-router.post('/payments/:paymentId/send-receipt', async (req: AuthRequest, res, next) => {
+router.post('/payments/:paymentId/send-receipt', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const paymentId = req.params.paymentId;
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        bill: { include: { package: true, customer: { include: { user: true, resellerId: true } } } },
+        bill: { include: { package: true, customer: { include: { user: true } } } },
         customer: { select: { phone: true } },
       },
     });
     if (!payment?.bill) throw new AppError(404, 'Payment not found');
-    if ((payment.bill.customer as any).resellerId !== resellerId) throw new AppError(403, 'Not your customer');
-    const phone = payment.customer?.phone ?? payment.bill.customer?.user?.phone;
+    const billCustomer = (payment as any).bill.customer;
+    if (billCustomer?.resellerId !== resellerId) throw new AppError(403, 'Not your customer');
+    const phone = (payment as any).customer?.phone ?? billCustomer?.user?.phone;
     if (!phone) throw new AppError(400, 'Customer phone not found');
-    const msg = `Receipt: Paid BDT ${payment.amount} (${payment.method}) for ${payment.bill.package?.name ?? 'bill'}. Date: ${new Date(payment.createdAt).toLocaleDateString()}. Thank you.`;
+    const msg = `Receipt: Paid BDT ${payment.amount} (${payment.method}) for ${(payment as any).bill.package?.name ?? 'bill'}. Date: ${new Date(payment.createdAt).toLocaleDateString()}. Thank you.`;
     const { sendSms } = await import('../services/sms.js');
     await sendSms(phone, msg, 'RECEIPT');
     res.json({ ok: true, message: 'Receipt SMS sent.' });

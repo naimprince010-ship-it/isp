@@ -10,8 +10,9 @@ const PPPOE_POOL = process.env.MIKROTIK_PPPOE_POOL || 'pppoe-pool';
 
 async function getConnection(): Promise<any> {
   try {
-    const RouterOS = (await import('node-routeros')).default;
-    const conn = new RouterOS({
+    const mod = await import('node-routeros');
+    const RouterOS = (mod as any).default ?? mod;
+    const conn = new (RouterOS as new (opts: { host: string; user: string; password: string }) => any)({
       host: MIKROTIK_HOST,
       user: MIKROTIK_USER,
       password: MIKROTIK_PASS,
