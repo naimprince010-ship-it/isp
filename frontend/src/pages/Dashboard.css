@@ -1,0 +1,151 @@
+.dashboard h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+.demo-banner {
+  background: #422006;
+  color: #fcd34d;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #78350f;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.card {
+  background: #1e293b;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.card .value {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.card .value.green {
+  color: #22c55e;
+}
+.card .muted {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+.section {
+  margin-top: 1.5rem;
+}
+.section h2,
+.section-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #94a3b8;
+}
+.section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.section li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #334155;
+}
+.loading,
+.error-msg {
+  padding: 2rem;
+  text-align: center;
+  color: #94a3b8;
+}
+.error-msg {
+  color: #f87171;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+}
+
+.data-table th {
+  background: #334155;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  font-size: 0.875rem;
+}
+
+.data-table tbody tr:hover {
+  background: #334155;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+.form-input::placeholder {
+  color: #64748b;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 90%;
+}
+.modal-card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+}
+.modal-card .form-input {
+  margin-bottom: 0.75rem;
+}

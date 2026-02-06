@@ -1,0 +1,39 @@
+# ISP Management – Docker Compose (backend + DB)
+# Frontend: build separately and set VITE_API_URL to backend URL, or serve static from backend.
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: isp
+      POSTGRES_PASSWORD: isp_secret
+      POSTGRES_DB: isp_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U isp -d isp_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://isp:isp_secret@db:5432/isp_db
+      JWT_SECRET: change-this-in-production
+      PORT: 4000
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+volumes:
+  pgdata:

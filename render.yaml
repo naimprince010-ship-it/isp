@@ -1,0 +1,39 @@
+# ISP Management – Render Blueprint
+# Deploy: Connect this repo to Render, then use "New Blueprint" or add services manually per RENDER_DEPLOY.md
+
+databases:
+  - name: isp-db
+    plan: free
+    databaseName: isp
+
+services:
+  # Backend (Node + Express + Prisma)
+  - type: web
+    name: isp-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: isp-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+  # Frontend (Vite + React static)
+  - type: web
+    name: isp-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false

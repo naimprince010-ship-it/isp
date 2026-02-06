@@ -1,0 +1,372 @@
+// ISP Management - Shariatpur Reseller Model
+// Admin, Reseller, Customer
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Railway/production: use PostgreSQL (DATABASE_URL from Railway Postgres).
+// Local dev: use PostgreSQL via Docker or Neon, e.g. postgresql://postgres:postgres@localhost:5432/isp
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RESELLER
+  CUSTOMER
+  EMPLOYEE
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  PENDING
+  PERSONAL
+  FREE
+  LEFT
+}
+
+enum BillStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIAL
+}
+
+enum PaymentMethod {
+  CASH
+  BKASH
+  NAGAD
+  ROCKET
+  BANK
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum InventoryType {
+  ROUTER
+  ONU
+  MC
+  FIBER_CABLE
+  OTHER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  phone         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String
+  role          Role
+  avatar        String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Reseller-specific (when role = RESELLER)
+  resellerProfile ResellerProfile?
+  resellerId      String?   @map("reseller_id")
+  reseller        User?     @relation("ResellerCustomers", fields: [resellerId], references: [id])
+  customers       User[]    @relation("ResellerCustomers")
+
+  // Customer-specific
+  customerProfile CustomerProfile?
+  tickets         Ticket[]   @relation("CustomerTickets")
+  payments        Payment[]  @relation("CustomerPayments")
+
+  // Employee: assigned customers (when role = EMPLOYEE)
+  assignedCustomers CustomerProfile[] @relation("AssignedToEmployee")
+}
+
+model ResellerProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balanceLimit      Decimal  @default(0) @map("balance_limit")  // Admin-set credit limit
+  currentBalance    Decimal  @default(0) @map("current_balance") // Available credit
+  commissionRate    Decimal  @default(0) @map("commission_rate") // %
+  area              String?  // e.g. "Shariatpur - Sadar"
+  companyName       String?  @map("company_name")
+  address           String?
+  logoUrl           String?  @map("logo_url")
+  receiptHeader     String?  @map("receipt_header")
+  receiptFooter     String?  @map("receipt_footer")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  recharges         ResellerRecharge[]
+  customers         CustomerProfile[]
+  expenses          Expense[]         @relation("ResellerExpense")
+}
+
+model CustomerProfile {
+  id                String           @id @default(cuid())
+  userId            String           @unique @map("user_id")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resellerId        String           @map("reseller_id")
+  reseller          ResellerProfile  @relation(fields: [resellerId], references: [id], onDelete: Restrict)
+  packageId         String           @map("package_id")
+  package           Package          @relation(fields: [packageId], references: [id])
+  connectionType    String           @map("connection_type") // PPPoE | Static
+  username          String?          // PPPoE username for MikroTik
+  pppoePassword     String?          @map("pppoe_password") // stored on import; for export only
+  staticIp          String?          @map("static_ip")
+  macAddress        String?          @map("mac_address")
+  status            ConnectionStatus @default(PENDING)
+  address           String?
+  zoneArea          String?          @map("zone_area")
+  mikrotikSynced    Boolean          @default(false) @map("mikrotik_synced")
+  lastSyncAt        DateTime?        @map("last_sync_at")
+  assignedToUserId  String?          @map("assigned_to_user_id")
+  assignedToUser    User?            @relation("AssignedToEmployee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  leftAt            DateTime?        @map("left_at")
+  leftReason        String?          @map("left_reason")
+  advanceBalance    Decimal          @default(0) @map("advance_balance")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  bills             Bill[]
+  usageLogs         UsageLog[]
+  scheduleRules     ScheduleRule[]
+  changeRequests    CustomerRequest[]
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "5 Mbps", "10 Mbps"
+  speedMbps   Int      @map("speed_mbps")
+  price       Decimal  @map("price")
+  validityDays Int     @default(30) @map("validity_days") // Monthly = 30
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  customers   CustomerProfile[]
+  bills       Bill[]
+}
+
+model Bill {
+  id            String     @id @default(cuid())
+  customerId    String     @map("customer_id")
+  customer      CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  packageId     String     @map("package_id")
+  package       Package    @relation(fields: [packageId], references: [id])
+  amount        Decimal    @map("amount")
+  discountAmount Decimal   @default(0) @map("discount_amount")
+  dueDate       DateTime   @map("due_date")
+  paidAt        DateTime?  @map("paid_at")
+  status        BillStatus @default(PENDING)
+  month         Int        @map("month")
+  year          Int        @map("year")
+  paymentToken  String?    @unique @map("payment_token")
+  paymentTokenExpiresAt DateTime? @map("payment_token_expires_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  payments      Payment[]
+  pendingApprovals PendingPaymentApproval[]
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  billId        String?       @map("bill_id")
+  bill          Bill?         @relation(fields: [billId], references: [id], onDelete: SetNull)
+  customerId    String        @map("customer_id")
+  customer      User          @relation("CustomerPayments", fields: [customerId], references: [id], onDelete: Cascade)
+  amount        Decimal       @map("amount")
+  method        PaymentMethod @map("method")
+  trxId         String?       @map("trx_id") // bKash/Nagad/Rocket transaction ID
+  collectedBy   String?       @map("collected_by") // Reseller/Employee user id
+  approvedBy    String?       @map("approved_by") // Admin id when employee collection approved
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@map("payments")
+}
+
+// Employee collects bill -> pending approval; admin approves -> Payment created & Bill updated
+model PendingPaymentApproval {
+  id            String   @id @default(cuid())
+  billId        String   @map("bill_id")
+  bill          Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  amount        Decimal  @map("amount")
+  method        String   @map("method") // CASH, BKASH, NAGAD, ROCKET
+  trxId         String?  @map("trx_id")
+  collectedBy   String   @map("collected_by") // Employee user id
+  status        String   @default("PENDING") @map("status") // PENDING, APPROVED, REJECTED
+  approvedBy    String?  @map("approved_by")
+  approvedAt    DateTime? @map("approved_at")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("pending_payment_approvals")
+}
+
+model ResellerRecharge {
+  id            String   @id @default(cuid())
+  resellerId    String   @map("reseller_id")
+  reseller      ResellerProfile @relation(fields: [resellerId], references: [id], onDelete: Cascade)
+  amount        Decimal  @map("amount")
+  previousBalance Decimal @map("previous_balance")
+  newBalance    Decimal  @map("new_balance")
+  approvedBy    String?  @map("approved_by")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("reseller_recharges")
+}
+
+model UsageLog {
+  id            String   @id @default(cuid())
+  customerId    String   @map("customer_id")
+  customer      CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  downloadBytes BigInt   @default(0) @map("download_bytes")
+  uploadBytes   BigInt   @default(0) @map("upload_bytes")
+  date          DateTime @map("date")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([customerId, date])
+  @@map("usage_logs")
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  customerId  String       @map("customer_id")
+  customer    User         @relation("CustomerTickets", fields: [customerId], references: [id], onDelete: Cascade)
+  subject     String       @map("subject")
+  description String       @map("description")
+  status      TicketStatus @default(OPEN) @map("status")
+  priority    String       @default("NORMAL") @map("priority")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  resolvedAt  DateTime?    @map("resolved_at")
+
+  @@map("tickets")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String   @map("category") // SALARY, RENT, UPSTREAM, OFFICE, OTHER
+  amount      Decimal  @map("amount")
+  description String?  @map("description")
+  date        DateTime @map("date")
+  resellerId  String?  @map("reseller_id")
+  reseller    ResellerProfile? @relation("ResellerExpense", fields: [resellerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("expenses")
+}
+
+model InventoryItem {
+  id          String        @id @default(cuid())
+  type        InventoryType @map("type")
+  name        String        @map("name")
+  quantity    Int           @default(0) @map("quantity")
+  unit        String        @default("pcs") @map("unit")
+  minStock    Int           @default(0) @map("min_stock")
+  location    String?       @map("location")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("inventory_items")
+}
+
+model SmsLog {
+  id          String   @id @default(cuid())
+  phone       String   @map("phone")
+  message     String   @map("message")
+  purpose     String   @map("purpose") // BILL_GEN, PAYMENT, NETWORK_DOWN
+  status      String   @map("status") // SENT, FAILED
+  response    String?  @map("response")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("sms_logs")
+}
+
+model MikrotikSyncLog {
+  id          String   @id @default(cuid())
+  action      String   @map("action") // ADD, REMOVE, UPDATE, BLOCK
+  username    String?  @map("username")
+  customerId  String?  @map("customer_id")
+  success     Boolean  @map("success")
+  error       String?  @map("error")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("mikrotik_sync_logs")
+}
+
+model SystemConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique @map("key")
+  value       String   @map("value")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_config")
+}
+
+model ScheduleRule {
+  id            String     @id @default(cuid())
+  customerId    String     @map("customer_id")
+  customer      CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  scheduledAt   DateTime   @map("scheduled_at")
+  newStatus     ConnectionStatus? @map("new_status")
+  newPackageId  String?    @map("new_package_id")
+  appliedAt     DateTime?  @map("applied_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  @@map("schedule_rules")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model CustomerRequest {
+  id               String        @id @default(cuid())
+  customerId       String        @map("customer_id")
+  customer         CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type             String        @map("type") // PACKAGE_CHANGE | STATUS_CHANGE
+  requestedPackageId String?      @map("requested_package_id")
+  requestedStatus   String?      @map("requested_status")
+  status           RequestStatus @default(PENDING) @map("status")
+  reviewedBy        String?      @map("reviewed_by")
+  reviewedAt        DateTime?    @map("reviewed_at")
+  notes            String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  @@map("customer_requests")
+}
+
+// Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
+model NewClientRequest {
+  id                String        @id @default(cuid())
+  name              String        @map("name")
+  phone             String        @map("phone")
+  address           String?       @map("address")
+  packageId         String?       @map("package_id")
+  resellerId        String?       @map("reseller_id")
+  connectionType    String        @map("connection_type") // PPPoE | Static
+  requestedUsername String?       @map("requested_username")
+  requestedStaticIp String?       @map("requested_static_ip")
+  notes             String?
+  status            RequestStatus @default(PENDING) @map("status")
+  reviewedBy        String?       @map("reviewed_by")
+  reviewedAt        DateTime?     @map("reviewed_at")
+  createdCustomerId String?       @map("created_customer_id") // set when approved
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  @@map("new_client_requests")
+}

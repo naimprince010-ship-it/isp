@@ -1,0 +1,32 @@
+# Nginx sample – এক সার্ভারে Frontend (static) + Backend (API proxy)
+# কপি করে /etc/nginx/sites-available/isp (Linux) এ রাখুন, তারপর সিমলিংক ও reload
+
+server {
+    listen 80;
+    server_name app.yourapp.com;   # আপনার ডোমেইন
+
+    # Frontend (Vite build এর dist)
+    root /var/www/isp/frontend/dist;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API → Backend (port 4000)
+    location /api/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # HTTPS চালু করলে এই ব্লক ব্যবহার করুন (Let's Encrypt সহ)
+    # listen 443 ssl;
+    # ssl_certificate /etc/letsencrypt/live/app.yourapp.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/app.yourapp.com/privkey.pem;
+}
+
+# HTTP → HTTPS রিডাইরেক্ট (যদি SSL থাকে)
+# server { listen 80; server_name app.yourapp.com; return 301 https://$server_name$request_uri; }

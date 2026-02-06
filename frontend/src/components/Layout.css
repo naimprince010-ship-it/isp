@@ -1,0 +1,91 @@
+.layout {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  display: flex;
+}
+
+.layout-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #1e293b;
+  border-right: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+}
+
+.layout-brand {
+  font-weight: 700;
+  font-size: 1.125rem;
+  padding: 0 1.25rem 1rem;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 0.5rem;
+}
+
+.layout-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+}
+
+.nav-link {
+  color: #94a3b8;
+  text-decoration: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.nav-link:hover {
+  color: #f8fafc;
+  background: #334155;
+}
+
+.nav-link.active {
+  color: #f8fafc;
+  background: #334155;
+}
+
+.layout-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.layout-user {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.btn-logout {
+  padding: 0.4rem 0.75rem;
+  background: #334155;
+  color: #f8fafc;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-logout:hover {
+  background: #475569;
+}
+
+.layout-main {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-auto;
+}
