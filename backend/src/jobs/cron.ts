@@ -64,7 +64,7 @@ if (BILL_REMINDER_DAYS.length > 0) {
           const userEmail = (bill.customer as any).user?.email;
           if (sendBillEmail && userEmail) {
             try {
-              const { sendEmail } = await import('./services/email.js');
+              const { sendEmail } = await import('../services/email.js');
               const html = `Reminder: Your bill of BDT ${bill.amount} (${bill.package?.name ?? 'bill'}) is due in ${daysBefore} day(s). Due: ${new Date(bill.dueDate).toLocaleDateString()}. Please pay to avoid disconnection.`;
               await sendEmail(userEmail, `Bill reminder: Due in ${daysBefore} day(s)`, html);
             } catch (_) {}
@@ -111,7 +111,7 @@ cron.schedule('0 0 1 * *', async () => {
       if (phone) await sendSms(phone, `New bill generated: ${c.package.name} - BDT ${c.package.price}. Due: ${dueDate.toLocaleDateString()}`, 'BILL_GEN');
       if (sendBillEmail && c.user?.email) {
         try {
-          const { sendEmail } = await import('./services/email.js');
+          const { sendEmail } = await import('../services/email.js');
           const html = `Dear ${c.user.name || 'Customer'},<br><br>Your new bill has been generated.<br>Package: ${c.package.name}<br>Amount: BDT ${c.package.price}<br>Due: ${dueDate.toLocaleDateString()}.<br><br>Please pay before due date to avoid disconnection.`;
           await sendEmail(c.user.email, `Invoice: ${c.package.name} - BDT ${c.package.price}`, html);
         } catch (_) {}

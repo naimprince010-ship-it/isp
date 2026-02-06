@@ -73,7 +73,7 @@ router.post('/bills/:billId/collect-employee', requireRole('ADMIN', 'EMPLOYEE'),
 });
 
 // Admin only: list and approve pending payment (employee collections)
-router.get('/pending-payment-approvals', requireAdmin, async (req, res, next) => {
+router.get('/pending-payment-approvals', requireAdmin, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as string | undefined;
     const where: Prisma.PendingPaymentApprovalWhereInput = {};
@@ -101,7 +101,7 @@ router.get('/pending-payment-approvals', requireAdmin, async (req, res, next) =>
 router.patch('/pending-payment-approvals/:id', requireAdmin, [
   body('status').isIn(['APPROVED', 'REJECTED']),
   body('notes').optional().trim(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -156,7 +156,7 @@ router.patch('/pending-payment-approvals/:id', requireAdmin, [
 router.use(requireAdmin);
 
 // Setup status: what's configured (for Admin Dashboard)
-router.get('/setup-status', async (_req, res, next) => {
+router.get('/setup-status', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     let db = false;
     try {
@@ -173,7 +173,7 @@ router.get('/setup-status', async (_req, res, next) => {
   }
 });
 
-router.get('/dashboard', async (_req, res, next) => {
+router.get('/dashboard', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -208,7 +208,7 @@ router.get('/dashboard', async (_req, res, next) => {
 });
 
 // Upstream / BTCL config (capacity, provider) – record only; no API to BTCL
-router.get('/upstream', async (_req, res, next) => {
+router.get('/upstream', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const configs = await prisma.systemConfig.findMany({
       where: { key: { in: ['upstream_provider', 'upstream_capacity_mbps', 'upstream_notes'] } },
@@ -235,7 +235,7 @@ router.patch('/upstream', [
   body('provider').optional().trim(),
   body('capacityMbps').optional().isInt({ min: 0 }).toInt(),
   body('notes').optional().trim(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -256,7 +256,7 @@ router.patch('/upstream', [
   }
 });
 
-router.get('/resellers', async (_req, res, next) => {
+router.get('/resellers', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const list = await prisma.user.findMany({
       where: { role: 'RESELLER' },
@@ -282,7 +282,7 @@ router.post(
     body('companyName').optional().trim(),
     body('address').optional().trim(),
   ],
-  async (req, res, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -316,7 +316,7 @@ router.post(
   }
 );
 
-router.patch('/resellers/:id', async (req, res, next) => {
+router.patch('/resellers/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.params.id;
     const user = await prisma.user.findFirst({
@@ -354,7 +354,7 @@ router.patch('/resellers/:id', async (req, res, next) => {
 router.post(
   '/resellers/:id/recharge',
   [body('amount').isFloat({ min: 0.01 }), body('notes').optional().trim()],
-  async (req: AuthRequest, res, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -440,7 +440,7 @@ async function getBtrcReportData(month: number, year: number) {
   return { userList, paymentLog };
 }
 
-router.get('/reports/btrc', async (req, res, next) => {
+router.get('/reports/btrc', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
@@ -466,7 +466,7 @@ function escapeCsv(val: unknown): string {
   return s;
 }
 
-router.get('/reports/btrc/export', async (req, res, next) => {
+router.get('/reports/btrc/export', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
@@ -505,7 +505,7 @@ router.get('/reports/btrc/export', async (req, res, next) => {
 });
 
 // Client list export (PPPoE/Password/Profile to CSV or PDF-friendly HTML)
-router.get('/customers/export', async (req, res, next) => {
+router.get('/customers/export', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as string | undefined;
     const resellerId = req.query.resellerId as string | undefined;
@@ -581,7 +581,7 @@ router.patch('/customers/bulk-status', [
   body('customerIds').isArray(),
   body('customerIds.*').isString(),
   body('status').isIn(['ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING', 'PERSONAL', 'FREE', 'LEFT']),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -597,7 +597,7 @@ router.patch('/customers/bulk-status', [
 });
 
 // List customers (admin: all; filter by status, resellerId, packageId, zoneArea, date range)
-router.get('/customers', async (req, res, next) => {
+router.get('/customers', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as string | undefined;
     const resellerId = req.query.resellerId as string | undefined;
@@ -633,7 +633,7 @@ router.get('/customers', async (req, res, next) => {
 });
 
 // Full client profile with history and logs (bills, payments, usage, tickets)
-router.get('/customers/:id/profile', async (req, res, next) => {
+router.get('/customers/:id/profile', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const profile = await prisma.customerProfile.findUnique({
@@ -661,7 +661,7 @@ router.get('/customers/:id/profile', async (req, res, next) => {
 // Change PPPoE password from app and push to MikroTik
 router.patch('/customers/:id/pppoe-password', [
   body('password').trim().notEmpty().isLength({ min: 1 }),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -685,7 +685,7 @@ router.patch('/customers/:id/pppoe-password', [
 router.patch('/customers/:id/mac', [
   body('macAddress').optional({ values: 'falsy' }).trim(),
   body('pushToMikrotik').optional().isBoolean(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const macAddress = (req.body.macAddress as string) || null;
@@ -711,7 +711,7 @@ router.patch('/customers/:id/mac', [
 // Assign customer to employee
 router.patch('/customers/:id/assign', [
   body('assignedToUserId').optional({ values: 'falsy' }).isString(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -733,7 +733,7 @@ router.patch('/customers/:id/assign', [
 });
 
 // Employees list (for assign dropdown)
-router.get('/employees', async (_req, res, next) => {
+router.get('/employees', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const list = await prisma.user.findMany({
       where: { role: 'EMPLOYEE', isActive: true },
@@ -752,7 +752,7 @@ router.post('/employees', [
   body('password').isLength({ min: 6 }),
   body('name').trim().notEmpty(),
   body('email').optional().trim(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -776,7 +776,7 @@ router.post('/employees', [
 });
 
 // Schedule rules (status/package change at a future time)
-router.get('/schedule-rules', async (req, res, next) => {
+router.get('/schedule-rules', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const list = await prisma.scheduleRule.findMany({
       where: { appliedAt: null },
@@ -794,7 +794,7 @@ router.post('/schedule-rules', [
   body('scheduledAt').isISO8601(),
   body('newStatus').optional().isIn(['ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING', 'PERSONAL', 'FREE', 'LEFT']),
   body('newPackageId').optional().isString(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -814,7 +814,7 @@ router.post('/schedule-rules', [
   }
 });
 
-router.delete('/schedule-rules/:id', async (req, res, next) => {
+router.delete('/schedule-rules/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await prisma.scheduleRule.delete({ where: { id: req.params.id } });
     res.json({ ok: true });
@@ -824,7 +824,7 @@ router.delete('/schedule-rules/:id', async (req, res, next) => {
 });
 
 // Customer change requests (package/status from portal) – list and approve/reject
-router.get('/customer-requests', async (req, res, next) => {
+router.get('/customer-requests', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as string | undefined;
     const where: Prisma.CustomerRequestWhereInput = {};
@@ -846,7 +846,7 @@ router.get('/customer-requests', async (req, res, next) => {
 router.patch('/customer-requests/:id', [
   body('status').isIn(['APPROVED', 'REJECTED']),
   body('notes').optional().trim(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -901,7 +901,7 @@ router.patch('/new-client-requests/:id', [
   body('packageId').optional().trim(),
   body('password').optional().isLength({ min: 6 }),
   body('notes').optional().trim(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -991,7 +991,7 @@ router.post('/payment/verify', [
   body('method').isIn(['BKASH', 'NAGAD', 'ROCKET']),
   body('trxId').trim().notEmpty(),
   body('amount').isFloat({ min: 0 }),
-], async (req, res, next) => {
+], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -1008,7 +1008,7 @@ router.post('/payment/verify', [
 });
 
 // Bills list (admin: all) with filters: month, year, status, dueDateFrom, dueDateTo, resellerId
-router.get('/bills', async (req, res, next) => {
+router.get('/bills', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const month = req.query.month as string | undefined;
     const year = req.query.year as string | undefined;
@@ -1046,7 +1046,7 @@ router.get('/bills', async (req, res, next) => {
 });
 
 // Billing list export (PDF/Excel = HTML for print, CSV)
-router.get('/bills/export', async (req, res, next) => {
+router.get('/bills/export', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const month = req.query.month as string | undefined;
     const year = req.query.year as string | undefined;
@@ -1203,7 +1203,7 @@ router.post('/bills/:id/payment-link', [
 });
 
 // Money receipt (printable HTML – for pocket printer or browser print)
-router.get('/receipt/payment/:paymentId', async (req, res, next) => {
+router.get('/receipt/payment/:paymentId', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const paymentId = req.params.paymentId;
     const payment = await prisma.payment.findUnique({
@@ -1237,7 +1237,7 @@ router.get('/receipt/payment/:paymentId', async (req, res, next) => {
 });
 
 // Send money receipt to client via SMS
-router.post('/payments/:paymentId/send-receipt', async (req, res, next) => {
+router.post('/payments/:paymentId/send-receipt', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const paymentId = req.params.paymentId;
     const payment = await prisma.payment.findUnique({
@@ -1259,7 +1259,7 @@ router.post('/payments/:paymentId/send-receipt', async (req, res, next) => {
   }
 });
 
-router.get('/users', async (req, res, next) => {
+router.get('/users', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const role = req.query.role as string | undefined;
     const where: Prisma.UserWhereInput = {};
