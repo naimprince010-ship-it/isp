@@ -33,6 +33,7 @@ app.use('/api/sms', smsRouter);
 app.use('/api/new-client-request', newClientRequestRouter);
 app.use('/api/public', publicPayRouter);
 
+app.get('/', (_, res) => res.json({ name: 'ISP Management API', health: '/api/health', docs: 'Use /api/* routes for auth, admin, reseller, customer, etc.' }));
 app.get('/api/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
 
 app.use(errorHandler);
