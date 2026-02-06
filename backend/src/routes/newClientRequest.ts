@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
+import { RequestStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -19,7 +20,7 @@ router.post(
     body('requestedStaticIp').optional().trim(),
     body('notes').optional().trim(),
   ],
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -33,7 +34,7 @@ router.post(
         requestedUsername: req.body.requestedUsername || null,
         requestedStaticIp: req.body.requestedStaticIp || null,
         notes: req.body.notes || null,
-        status: 'PENDING',
+        status: 'PENDING' as RequestStatus,
       };
       const created = await prisma.newClientRequest.create({ data });
       res.status(201).json({ id: created.id, message: 'Request submitted. Admin will review.' });

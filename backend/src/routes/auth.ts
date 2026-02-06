@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { authMiddleware, type AuthRequest } from '../middleware/auth.js';
-import { Role } from '@prisma/client';
+import type { Role } from '@prisma/client';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
@@ -41,7 +41,7 @@ router.post(
       const token = jwt.sign(
         { userId: user.id, role: user.role },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES }
+        { expiresIn: JWT_EXPIRES } as jwt.SignOptions
       );
       res.status(201).json({ user, token });
     } catch (e) {
@@ -56,7 +56,7 @@ router.post(
     body('phone').trim().notEmpty(),
     body('password').notEmpty(),
   ],
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, 'Phone and password required');
@@ -74,7 +74,7 @@ router.post(
       const token = jwt.sign(
         { userId: user.id, role: user.role },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES }
+        { expiresIn: JWT_EXPIRES } as jwt.SignOptions
       );
       const payload = {
         id: user.id,

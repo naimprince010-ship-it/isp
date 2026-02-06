@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireAdmin } from '../middleware/auth.js';
@@ -17,7 +17,7 @@ router.get('/', async (_req, res, next) => {
   }
 });
 
-router.post('/', [body('type').isIn(['ROUTER', 'ONU', 'MC', 'FIBER_CABLE', 'OTHER']), body('name').trim().notEmpty()], async (req, res, next) => {
+router.post('/', [body('type').isIn(['ROUTER', 'ONU', 'MC', 'FIBER_CABLE', 'OTHER']), body('name').trim().notEmpty()], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -37,7 +37,7 @@ router.post('/', [body('type').isIn(['ROUTER', 'ONU', 'MC', 'FIBER_CABLE', 'OTHE
   }
 });
 
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const item = await prisma.inventoryItem.update({
       where: { id: req.params.id },
@@ -55,7 +55,7 @@ router.patch('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await prisma.inventoryItem.delete({ where: { id: req.params.id } });
     res.json({ ok: true });

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
@@ -9,7 +9,7 @@ const router = Router();
 router.use(authMiddleware);
 router.use(requireCustomer);
 
-router.get('/dashboard', async (req: AuthRequest, res, next) => {
+router.get('/dashboard', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id;
     const profile = await prisma.customerProfile.findFirst({
@@ -49,7 +49,7 @@ router.get('/dashboard', async (req: AuthRequest, res, next) => {
   }
 });
 
-router.get('/bills', async (req: AuthRequest, res, next) => {
+router.get('/bills', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id;
     const profile = await prisma.customerProfile.findFirst({ where: { userId }, select: { id: true } });
@@ -67,7 +67,7 @@ router.get('/bills', async (req: AuthRequest, res, next) => {
 });
 
 // Single bill invoice (customer: own bills only)
-router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
+router.get('/bills/:id/invoice', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id;
     const profile = await prisma.customerProfile.findFirst({ where: { userId }, select: { id: true } });
@@ -75,7 +75,7 @@ router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
     const bill = await prisma.bill.findFirst({
       where: { id: req.params.id, customerId: profile.id },
       include: {
-        customer: { include: { user: true, reseller: { include: { companyName: true, receiptHeader: true, receiptFooter: true } }, package: true } },
+        customer: { include: { user: true, reseller: { select: { companyName: true, receiptHeader: true, receiptFooter: true } }, package: true } },
         package: true,
         payments: true,
       },
@@ -83,9 +83,9 @@ router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
     if (!bill) throw new AppError(404, 'Bill not found');
     const discount = Number((bill as any).discountAmount ?? 0);
     const total = Number(bill.amount) - discount;
-    const paid = bill.payments.reduce((s, p) => s + Number(p.amount), 0);
+    const paid = (bill as any).payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
     const due = Math.max(0, total - paid);
-    const resellerProfile = bill.customer?.reseller as any;
+    const resellerProfile = (bill as any).customer?.reseller as any;
     const header = resellerProfile?.receiptHeader ?? resellerProfile?.companyName ?? 'ISP';
     const footer = resellerProfile?.receiptFooter ?? 'Thank you';
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${bill.id}</title><style>body{font-family:sans-serif;max-width:400px;margin:1em}table{width:100%;border-collapse:collapse}th,td{border:1px solid #333;padding:6px}.r{text-align:right}</style></head><body>
@@ -93,9 +93,9 @@ router.get('/bills/:id/invoice', async (req: AuthRequest, res, next) => {
 <h2>Invoice</h2>
 <div>Bill #${bill.id.slice(-8)}</div>
 <div>Date: ${new Date(bill.createdAt).toLocaleDateString()}</div>
-<div>Customer: ${(bill.customer?.user?.name ?? '').replace(/</g, '&lt;')}</div>
-<div>Phone: ${(bill.customer?.user?.phone ?? '').replace(/</g, '&lt;')}</div>
-<div>Package: ${(bill.package?.name ?? '').replace(/</g, '&lt;')}</div>
+<div>Customer: ${((bill as any).customer?.user?.name ?? '').replace(/</g, '&lt;')}</div>
+<div>Phone: ${((bill as any).customer?.user?.phone ?? '').replace(/</g, '&lt;')}</div>
+<div>Package: ${((bill as any).package?.name ?? '').replace(/</g, '&lt;')}</div>
 <table><tr><td>Amount</td><td class="r">BDT ${bill.amount}</td></tr>
 ${discount ? `<tr><td>Discount</td><td class="r">- BDT ${discount}</td></tr>` : ''}
 <tr><td>Total</td><td class="r">BDT ${total}</td></tr>
@@ -111,7 +111,7 @@ ${discount ? `<tr><td>Discount</td><td class="r">- BDT ${discount}</td></tr>` : 
   }
 });
 
-router.post('/bills/:billId/pay', [body('amount').isFloat({ min: 0.01 }), body('method').isIn(['BKASH', 'NAGAD', 'ROCKET']), body('trxId').trim().notEmpty()], async (req: AuthRequest, res, next) => {
+router.post('/bills/:billId/pay', [body('amount').isFloat({ min: 0.01 }), body('method').isIn(['BKASH', 'NAGAD', 'ROCKET']), body('trxId').trim().notEmpty()], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -136,7 +136,7 @@ router.post('/bills/:billId/pay', [body('amount').isFloat({ min: 0.01 }), body('
   }
 });
 
-router.get('/usage', async (req: AuthRequest, res, next) => {
+router.get('/usage', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.id;
     const profile = await prisma.customerProfile.findFirst({ where: { userId }, select: { id: true } });
@@ -172,7 +172,7 @@ router.post('/requests', [
   body('type').isIn(['PACKAGE_CHANGE', 'STATUS_CHANGE']),
   body('requestedPackageId').optional().isString(),
   body('requestedStatus').optional().isIn(['ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING', 'PERSONAL', 'FREE', 'LEFT']),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
