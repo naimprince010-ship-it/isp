@@ -81,7 +81,13 @@ router.get('/pending-payment-approvals', requireAdmin, async (req, res, next) =>
     const list = await prisma.pendingPaymentApproval.findMany({
       where,
       include: {
-        bill: { include: { customer: { include: { user: true } }, package: true }, payments: true } },
+        bill: {
+          include: {
+            customer: { include: { user: true } },
+            package: true,
+            payments: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: 100,

@@ -24,7 +24,7 @@ export async function verifyTransaction(
   // Stub: when gateway not configured, accept if amount matches (for testing)
   const hasBkash = !!(process.env.BKASH_APP_KEY || process.env.BKASH_APP_SECRET);
   const hasNagad = !!(process.env.NAGAD_MERCHANT_ID || process.env.NAGAD_APP_KEY);
-  const hasRocket = !!(process.env.ROCKET_*);
+  const hasRocket = !!(process.env.ROCKET_API_KEY);
   const configured = hasBkash || hasNagad || hasRocket;
   if (!configured) {
     // Development: accept any trxId with format; in production return verified: false
