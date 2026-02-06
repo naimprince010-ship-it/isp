@@ -21,4 +21,4 @@ COPY --from=builder /app/prisma ./prisma
 RUN npx prisma generate
 
 EXPOSE 4000
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "npx prisma db push && npm run db:seed && node dist/index.js"]

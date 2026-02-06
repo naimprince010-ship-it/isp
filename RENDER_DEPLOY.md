@@ -102,5 +102,6 @@ Render এ তিনটা জিনিস লাগবে: **PostgreSQL**, **Ba
 ## সমস্যা হলে
 
 - **Backend ডিপ্লয় ফেইল:** লগে দেখুন `prisma db push` বা `node dist/index.js` কোনটা ফেইল করছে। `DATABASE_URL` ঠিক আছে কিনা চেক করুন।
+- **লগইনে "Internal server error":** Backend সেবার **Logs** খুলে দেখুন — ঠিক কোন এরর/স্ট্যাক ট্রেস আসছে। সাধারণ কারণ: (১) ডাটাবেসে অ্যাডমিন ইউজার নেই — ডিপ্লয়ের পর `prisma db push` ও `db:seed` চালু থাকলে অটো সিড হয়; (২) `DATABASE_URL` ভুল বা DB কানেক্ট হচ্ছে না।
 - **Frontend থেকে API কল করলে এরর:** `VITE_API_URL` ঠিক আছে কিনা দেখুন (Backend URL, বিনা `/api`)। বিল্ডের সময় এই মান এমবেড হয় তাই পরিবর্তন করলে আবার ডিপ্লয় করতে হবে।
 - **CORS এরর:** Backend এর `FRONTEND_URL` এ Frontend এর আসল URL (হোস্ট সহ) দিন।
