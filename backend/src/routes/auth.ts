@@ -20,7 +20,7 @@ router.post(
     body('role').isIn(['RESELLER', 'CUSTOMER']).withMessage('Invalid role'),
     body('email').optional().isEmail(),
   ],
-  async (req, res, next) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);

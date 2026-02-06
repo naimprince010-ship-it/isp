@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireAdmin, requireRole, type AuthRequest } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { Role } from '@prisma/client';
+import type { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
@@ -16,7 +16,7 @@ router.post('/bills/:billId/collect-employee', requireRole('ADMIN', 'EMPLOYEE'),
   body('method').isIn(['CASH', 'BKASH', 'NAGAD', 'ROCKET']),
   body('trxId').optional().trim(),
   body('notes').optional().trim(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -879,7 +879,7 @@ router.patch('/customer-requests/:id', [
 });
 
 // New client requests (add new client – request → approve → create User+CustomerProfile)
-router.get('/new-client-requests', async (req, res, next) => {
+router.get('/new-client-requests', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const status = req.query.status as string | undefined;
     const where: any = {};
@@ -968,7 +968,7 @@ router.patch('/new-client-requests/:id', [
 // Mark customer as left (archive)
 router.patch('/customers/:id/left', [
   body('leftReason').optional().trim(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const leftReason = (req.body.leftReason as string) || null;
@@ -1109,7 +1109,7 @@ router.get('/bills/export', async (req, res, next) => {
 router.patch('/bills/:id/extend', [
   body('dueDate').optional().isISO8601(),
   body('extendDays').optional().isInt({ min: 1, max: 365 }).toInt(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -1134,13 +1134,13 @@ router.patch('/bills/:id/extend', [
 });
 
 // Single bill invoice (printable HTML)
-router.get('/bills/:id/invoice', async (req, res, next) => {
+router.get('/bills/:id/invoice', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const bill = await prisma.bill.findUnique({
       where: { id },
       include: {
-        customer: { include: { user: true, reseller: { include: { user: true, companyName: true, receiptHeader: true, receiptFooter: true } }, package: true } },
+        customer: { include: { user: true, reseller: { select: { companyName: true, receiptHeader: true, receiptFooter: true } }, package: true } },
         package: true,
         payments: true,
       },
@@ -1148,9 +1148,9 @@ router.get('/bills/:id/invoice', async (req, res, next) => {
     if (!bill) throw new AppError(404, 'Bill not found');
     const discount = Number((bill as any).discountAmount ?? 0);
     const total = Number(bill.amount) - discount;
-    const paid = bill.payments.reduce((s, p) => s + Number(p.amount), 0);
+    const paid = (bill as any).payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
     const due = Math.max(0, total - paid);
-    const reseller = bill.customer?.reseller as any;
+    const reseller = (bill as any).customer?.reseller as any;
     const header = reseller?.receiptHeader ?? reseller?.companyName ?? 'ISP';
     const footer = reseller?.receiptFooter ?? 'Thank you';
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${bill.id}</title><style>body{font-family:sans-serif;max-width:400px;margin:1em}table{width:100%;border-collapse:collapse}th,td{border:1px solid #333;padding:6px}.r{text-align:right}</style></head><body>
@@ -1158,9 +1158,9 @@ router.get('/bills/:id/invoice', async (req, res, next) => {
 <h2>Invoice</h2>
 <div>Bill #${bill.id.slice(-8)}</div>
 <div>Date: ${new Date(bill.createdAt).toLocaleDateString()}</div>
-<div>Customer: ${(bill.customer?.user?.name ?? '').replace(/</g, '&lt;')}</div>
-<div>Phone: ${(bill.customer?.user?.phone ?? '').replace(/</g, '&lt;')}</div>
-<div>Package: ${(bill.package?.name ?? '').replace(/</g, '&lt;')}</div>
+<div>Customer: ${((bill as any).customer?.user?.name ?? '').replace(/</g, '&lt;')}</div>
+<div>Phone: ${((bill as any).customer?.user?.phone ?? '').replace(/</g, '&lt;')}</div>
+<div>Package: ${((bill as any).package?.name ?? '').replace(/</g, '&lt;')}</div>
 <table><tr><td>Amount</td><td class="r">BDT ${bill.amount}</td></tr>
 ${discount ? `<tr><td>Discount</td><td class="r">- BDT ${discount}</td></tr>` : ''}
 <tr><td>Total</td><td class="r">BDT ${total}</td></tr>
@@ -1179,7 +1179,7 @@ ${discount ? `<tr><td>Discount</td><td class="r">- BDT ${discount}</td></tr>` : 
 // Generate payment link (outside pay without login)
 router.post('/bills/:id/payment-link', [
   body('expiresInDays').optional().isInt({ min: 1, max: 90 }).toInt(),
-], async (req, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id;
     const bill = await prisma.bill.findUnique({ where: { id } });
