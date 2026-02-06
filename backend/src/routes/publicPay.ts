@@ -4,7 +4,7 @@
  * POST /api/public/pay/:token – submit payment (amount, method, trxId)
  */
 
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
@@ -56,7 +56,7 @@ router.post('/pay/:token', [
   body('amount').isFloat({ min: 0.01 }),
   body('method').isIn(['BKASH', 'NAGAD', 'ROCKET']),
   body('trxId').trim().notEmpty(),
-], async (req, res, next) => {
+], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -112,7 +112,7 @@ router.post('/pay/:token', [
         },
       }));
     }
-    await prisma.$transaction(updates);
+    await prisma.$transaction(updates as any);
     res.json({ ok: true, message: 'Payment recorded.', status: newStatus });
   } catch (e) {
     next(e);

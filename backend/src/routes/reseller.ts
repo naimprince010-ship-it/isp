@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { authMiddleware, requireReseller, type AuthRequest } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { ConnectionStatus } from '@prisma/client';
+import { ConnectionStatus, BillStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
@@ -18,7 +18,7 @@ function getResellerId(req: AuthRequest): string {
 }
 
 // Reseller dashboard: balance, customer count, collection summary
-router.get('/dashboard', async (req: AuthRequest, res, next) => {
+router.get('/dashboard', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const profile = await prisma.resellerProfile.findUnique({
@@ -65,7 +65,7 @@ router.get('/dashboard', async (req: AuthRequest, res, next) => {
 });
 
 // User provisioning: list my customers (with filters: status, packageId, zoneArea)
-router.get('/customers', async (req: AuthRequest, res, next) => {
+router.get('/customers', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const status = req.query.status as string | undefined;
@@ -90,7 +90,7 @@ router.get('/customers', async (req: AuthRequest, res, next) => {
 });
 
 // Full client profile with history (reseller: own customers only)
-router.get('/customers/:id/profile', async (req: AuthRequest, res, next) => {
+router.get('/customers/:id/profile', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const id = req.params.id;
@@ -118,7 +118,7 @@ router.get('/customers/:id/profile', async (req: AuthRequest, res, next) => {
 // Change PPPoE password and push to MikroTik (reseller: own customer only)
 router.patch('/customers/:id/pppoe-password', [
   body('password').trim().notEmpty().isLength({ min: 1 }),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -143,7 +143,7 @@ router.patch('/customers/:id/pppoe-password', [
 router.patch('/customers/:id/mac', [
   body('macAddress').optional({ values: 'falsy' }).trim(),
   body('pushToMikrotik').optional().isBoolean(),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const id = req.params.id;
@@ -179,7 +179,7 @@ router.post(
     body('address').optional().trim(),
     body('zoneArea').optional().trim(),
   ],
-  async (req: AuthRequest, res, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -272,7 +272,7 @@ router.patch('/customers/bulk-status', [
   body('customerIds').isArray(),
   body('customerIds.*').isString(),
   body('status').isIn(['ACTIVE', 'INACTIVE', 'BLOCKED', 'PENDING', 'PERSONAL', 'FREE', 'LEFT']),
-], async (req: AuthRequest, res, next) => {
+], async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -289,7 +289,7 @@ router.patch('/customers/bulk-status', [
 });
 
 // Block / Unblock customer
-router.patch('/customers/:id/status', async (req: AuthRequest, res, next) => {
+router.patch('/customers/:id/status', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const status = req.body.status as ConnectionStatus;
@@ -319,7 +319,7 @@ router.post(
     body('discountAmount').optional().isFloat({ min: 0 }),
     body('useAdvance').optional().isFloat({ min: 0 }),
   ],
-  async (req: AuthRequest, res, next) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
@@ -377,7 +377,7 @@ router.post(
         }
         await tx.bill.update({
           where: { id: bill.id },
-          data: billUpdateData,
+          data: { ...billUpdateData, status: billUpdateData.status as BillStatus },
         });
         await tx.customerProfile.update({
           where: { id: bill.customerId },
@@ -519,7 +519,7 @@ router.post('/bills/:id/payment-link', [
 });
 
 // My recharge history
-router.get('/recharges', async (req: AuthRequest, res, next) => {
+router.get('/recharges', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const list = await prisma.resellerRecharge.findMany({
@@ -548,7 +548,7 @@ router.get('/branding', async (req: AuthRequest, res, next) => {
   }
 });
 
-router.patch('/branding', async (req: AuthRequest, res, next) => {
+router.patch('/branding', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const p = await prisma.resellerProfile.update({
@@ -604,7 +604,7 @@ router.get('/bills', async (req: AuthRequest, res, next) => {
 });
 
 // Billing list export (CSV or HTML for print)
-router.get('/bills/export', async (req: AuthRequest, res, next) => {
+router.get('/bills/export', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const resellerId = getResellerId(req);
     const status = req.query.status as string | undefined;
