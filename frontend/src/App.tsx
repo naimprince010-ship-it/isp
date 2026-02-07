@@ -29,6 +29,7 @@ import HRPerformance from './pages/HRPerformance';
 import Tasks from './pages/Tasks';
 import SalesService from './pages/SalesService';
 import PurchaseManagement from './pages/PurchaseManagement';
+import NetworkDiagram from './pages/NetworkDiagram';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -61,6 +62,12 @@ function RequireReseller({ children }: { children: React.ReactNode }) {
 function RequireAdminOrReseller({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (user?.role !== 'ADMIN' && user?.role !== 'RESELLER') return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function RequireNetworkAccess({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== 'ADMIN' && user?.role !== 'RESELLER' && user?.role !== 'EMPLOYEE') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -111,6 +118,7 @@ export default function App() {
             <Route path="inventory" element={<RequireAdmin><Inventory /></RequireAdmin>} />
             <Route path="sales" element={<RequireAdminOrReseller><SalesService /></RequireAdminOrReseller>} />
             <Route path="purchase" element={<RequireAdmin><PurchaseManagement /></RequireAdmin>} />
+            <Route path="network" element={<RequireNetworkAccess><NetworkDiagram /></RequireNetworkAccess>} />
             <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
             <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />
             <Route path="hr/employees" element={<RequireAdmin><HREmployees /></RequireAdmin>} />

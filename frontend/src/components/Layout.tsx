@@ -21,6 +21,7 @@ export default function Layout() {
       { label: 'Schedule Rules', path: '/schedule-rules' },
       { label: 'Billing', path: '/billing' },
       { label: 'Pending Approvals', path: '/pending-approvals' },
+      { label: 'Network Diagram', path: '/network' },
       { label: 'MikroTik', path: '/mikrotik' },
       { label: 'BTRC Report', path: '/btrc' },
       { label: 'Upstream (Summit)', path: '/upstream' },
@@ -39,6 +40,7 @@ export default function Layout() {
     ],
     RESELLER: [
       { label: 'Dashboard', path: '/' },
+      { label: 'Network Diagram', path: '/network' },
       { label: 'Customers', path: '/customers' },
       { label: 'Bills', path: '/bills' },
       { label: 'Sales & Service', path: '/sales' },
@@ -55,6 +57,7 @@ export default function Layout() {
     ],
     EMPLOYEE: [
       { label: 'Dashboard', path: '/' },
+      { label: 'Network Diagram', path: '/network' },
       { label: 'Tasks', path: '/tasks' },
     ],
   };

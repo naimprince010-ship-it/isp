@@ -249,6 +249,10 @@ export const sales = {
   serviceInvoice: (id: string) => api<unknown>(`/sales/service-invoices/${id}`),
 };
 
+export const network = {
+  diagram: () => api<{ pops: unknown[]; clients: unknown[]; connections: unknown[]; inventoryByLocation: unknown[]; inventory: unknown[] }>('/network/diagram'),
+};
+
 export const purchase = {
   vendors: (activeOnly?: boolean) => api<unknown[]>(`/purchase/vendors${activeOnly === false ? '/all' : ''}`),
   createVendor: (data: { name: string; contactPerson?: string; phone?: string; email?: string; address?: string; notes?: string }) =>

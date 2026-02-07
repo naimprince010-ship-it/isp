@@ -1,0 +1,320 @@
+/* Network Diagram - Sundor styling */
+.network-page {
+  padding: 0 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.network-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.network-header h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.network-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.network-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.net-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.net-tab:hover {
+  background: #334155;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.net-tab.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  border-color: #60a5fa;
+  color: white;
+}
+
+.net-tab-icon {
+  font-size: 1rem;
+}
+
+/* Diagram section */
+.network-diagram-section {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #1e293b;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.diagram-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.diagram-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.net-select {
+  width: auto !important;
+  min-width: 140px;
+  padding: 0.4rem 0.75rem !important;
+}
+
+.diagram-canvas {
+  background: #020617;
+  border-radius: 8px;
+  overflow: auto;
+  min-height: 420px;
+  border: 1px solid #1e293b;
+}
+
+.net-svg {
+  width: 100%;
+  min-width: 700px;
+  height: auto;
+}
+
+.client-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.client-legend .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+/* Map view */
+.network-map-section {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #1e293b;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.map-zone {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1px solid #334155;
+  transition: box-shadow 0.2s;
+}
+
+.map-zone:hover {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.map-zone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.map-zone-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.map-zone-count {
+  font-size: 0.75rem;
+  color: #64748b;
+  background: #334155;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.map-zone-clients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.map-client-node {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  background: #0f172a;
+  border-radius: 4px;
+  border: 1px solid;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-more {
+  font-size: 0.75rem;
+  color: #64748b;
+  padding: 0.25rem;
+}
+
+.map-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+}
+
+/* Inventory view */
+.network-inventory-section {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #1e293b;
+}
+
+.network-inventory-section h2,
+.network-client-table h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.inv-location-card {
+  background: #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.inv-location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #334155;
+  font-size: 0.875rem;
+}
+
+.inv-location-name {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.inv-location-count {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.inv-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.inv-item-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #334155;
+  font-size: 0.8rem;
+}
+
+.inv-item-list li:last-child {
+  border-bottom: none;
+}
+
+.inv-item-list li.low-stock {
+  color: #f87171;
+}
+
+.inv-item-name {
+  flex: 1;
+  min-width: 100px;
+  color: #e2e8f0;
+}
+
+.inv-item-type {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.inv-item-qty {
+  font-weight: 500;
+  color: #60a5fa;
+}
+
+/* Client table */
+.network-client-table {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #1e293b;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
