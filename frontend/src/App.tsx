@@ -27,6 +27,7 @@ import HRSalary from './pages/HRSalary';
 import HRAttendance from './pages/HRAttendance';
 import HRPerformance from './pages/HRPerformance';
 import Tasks from './pages/Tasks';
+import SalesService from './pages/SalesService';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -53,6 +54,12 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 function RequireReseller({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   if (user?.role !== 'RESELLER') return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function RequireAdminOrReseller({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role !== 'ADMIN' && user?.role !== 'RESELLER') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -101,6 +108,7 @@ export default function App() {
             <Route path="reports" element={<RequireAdmin><Reports /></RequireAdmin>} />
             <Route path="upstream" element={<RequireAdmin><Upstream /></RequireAdmin>} />
             <Route path="inventory" element={<RequireAdmin><Inventory /></RequireAdmin>} />
+            <Route path="sales" element={<RequireAdminOrReseller><SalesService /></RequireAdminOrReseller>} />
             <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
             <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />
             <Route path="hr/employees" element={<RequireAdmin><HREmployees /></RequireAdmin>} />

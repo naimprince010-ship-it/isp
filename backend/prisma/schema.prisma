@@ -110,6 +110,8 @@ model ResellerProfile {
   recharges         ResellerRecharge[]
   customers         CustomerProfile[]
   expenses          Expense[]         @relation("ResellerExpense")
+  productInvoices   ProductInvoice[]
+  serviceInvoices   ServiceInvoice[]
 }
 
 model CustomerProfile {
@@ -142,6 +144,9 @@ model CustomerProfile {
   usageLogs         UsageLog[]
   scheduleRules     ScheduleRule[]
   changeRequests    CustomerRequest[]
+  installationFees  InstallationFee[]
+  productInvoices   ProductInvoice[]
+  serviceInvoices   ServiceInvoice[]
 }
 
 model Package {
@@ -456,6 +461,53 @@ model PerformanceAppraisal {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("performance_appraisals")
+}
+
+// Sales & Service - installation fee, product invoice, service invoice
+model InstallationFee {
+  id          String   @id @default(cuid())
+  customerId  String   @map("customer_id")
+  customer    CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  amount      Decimal  @map("amount")
+  method      String   @map("method") // CASH, BKASH, NAGAD, ROCKET, BANK
+  trxId       String?  @map("trx_id")
+  collectedBy String?  @map("collected_by")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("installation_fees")
+}
+
+model ProductInvoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @map("invoice_number")
+  customerId    String?  @map("customer_id")
+  customer      CustomerProfile? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  resellerId    String?  @map("reseller_id")
+  reseller      ResellerProfile? @relation(fields: [resellerId], references: [id], onDelete: SetNull)
+  date          DateTime @map("date")
+  items         Json     @map("items") // [{productName, quantity, rate, amount}]
+  totalAmount   Decimal  @map("total_amount")
+  status        String   @default("PAID") @map("status") // DRAFT, PAID, PENDING
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("product_invoices")
+}
+
+model ServiceInvoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @map("invoice_number")
+  customerId    String?  @map("customer_id")
+  customer      CustomerProfile? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  resellerId    String?  @map("reseller_id")
+  reseller      ResellerProfile? @relation(fields: [resellerId], references: [id], onDelete: SetNull)
+  description   String   @map("description")
+  amount        Decimal  @map("amount")
+  date          DateTime @map("date")
+  status        String   @default("PAID") @map("status")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("service_invoices")
 }
 
 // Task Management – create task planning, schedule, daily tasks, history

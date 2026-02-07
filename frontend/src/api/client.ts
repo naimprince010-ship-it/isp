@@ -235,6 +235,20 @@ export const inventory = {
   delete: (id: string) => api<{ ok: boolean }>(`/inventory/${id}`, { method: 'DELETE' }),
 };
 
+export const sales = {
+  installationFees: () => api<unknown[]>('/sales/installation-fees'),
+  collectInstallationFee: (data: { customerId: string; amount: number; method: string; trxId?: string; notes?: string }) =>
+    api('/sales/installation-fees', { method: 'POST', body: JSON.stringify(data) }),
+  productInvoices: () => api<unknown[]>('/sales/product-invoices'),
+  createProductInvoice: (data: { customerId?: string; items: { productName: string; quantity: number; rate: number }[] }) =>
+    api('/sales/product-invoices', { method: 'POST', body: JSON.stringify(data) }),
+  productInvoice: (id: string) => api<unknown>(`/sales/product-invoices/${id}`),
+  serviceInvoices: () => api<unknown[]>('/sales/service-invoices'),
+  createServiceInvoice: (data: { customerId?: string; description: string; amount: number }) =>
+    api('/sales/service-invoices', { method: 'POST', body: JSON.stringify(data) }),
+  serviceInvoice: (id: string) => api<unknown>(`/sales/service-invoices/${id}`),
+};
+
 export const hr = {
   departments: () => api<unknown[]>('/hr/departments'),
   createDepartment: (data: { name: string; description?: string }) => api('/hr/departments', { method: 'POST', body: JSON.stringify(data) }),
