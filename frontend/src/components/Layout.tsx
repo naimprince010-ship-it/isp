@@ -33,6 +33,7 @@ export default function Layout() {
       { label: 'Salary', path: '/hr/salary' },
       { label: 'Attendance', path: '/hr/attendance' },
       { label: 'Performance', path: '/hr/performance' },
+      { label: 'Tasks', path: '/tasks' },
     ],
     RESELLER: [
       { label: 'Dashboard', path: '/' },
@@ -47,6 +48,11 @@ export default function Layout() {
       { label: 'Pay Bill', path: '/pay' },
       { label: 'Usage', path: '/usage' },
       { label: 'Support', path: '/support' },
+      { label: 'Tasks', path: '/tasks' },
+    ],
+    EMPLOYEE: [
+      { label: 'Dashboard', path: '/' },
+      { label: 'Tasks', path: '/tasks' },
     ],
   };
 

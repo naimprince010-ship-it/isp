@@ -85,6 +85,10 @@ model User {
   // Employee: assigned customers (when role = EMPLOYEE)
   assignedCustomers CustomerProfile[] @relation("AssignedToEmployee")
   employeeProfile   EmployeeProfile?
+
+  // Task Management
+  tasksCreated   Task[] @relation("TaskCreatedBy")
+  tasksAssigned  Task[] @relation("TaskAssignedTo")
 }
 
 model ResellerProfile {
@@ -452,6 +456,25 @@ model PerformanceAppraisal {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("performance_appraisals")
+}
+
+// Task Management – create task planning, schedule, daily tasks, history
+model Task {
+  id            String    @id @default(cuid())
+  title         String    @map("title")
+  description   String?   @map("description")
+  dueDate       DateTime  @map("due_date")
+  status        String    @default("PENDING") @map("status") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  priority      String?   @map("priority")    // LOW, MEDIUM, HIGH
+  createdById   String    @map("created_by_id")
+  createdBy     User      @relation("TaskCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  assignedToId  String?   @map("assigned_to_id")
+  assignedTo    User?     @relation("TaskAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("tasks")
 }
 
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created

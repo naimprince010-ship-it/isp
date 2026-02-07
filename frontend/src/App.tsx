@@ -26,6 +26,7 @@ import HREmployeeProfile from './pages/HREmployeeProfile';
 import HRSalary from './pages/HRSalary';
 import HRAttendance from './pages/HRAttendance';
 import HRPerformance from './pages/HRPerformance';
+import Tasks from './pages/Tasks';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -66,6 +67,7 @@ function DashboardByRole() {
   if (user?.role === 'ADMIN') return <AdminDashboard />;
   if (user?.role === 'RESELLER') return <ResellerDashboard />;
   if (user?.role === 'CUSTOMER') return <CustomerDashboard />;
+  if (user?.role === 'EMPLOYEE') return <Navigate to="/tasks" replace />;
   return <div>Unknown role</div>;
 }
 
@@ -106,6 +108,7 @@ export default function App() {
             <Route path="hr/salary" element={<RequireAdmin><HRSalary /></RequireAdmin>} />
             <Route path="hr/attendance" element={<RequireAdmin><HRAttendance /></RequireAdmin>} />
             <Route path="hr/performance" element={<RequireAdmin><HRPerformance /></RequireAdmin>} />
+            <Route path="tasks" element={<Tasks />} />
             <Route path="customers" element={<RequireReseller><Customers /></RequireReseller>} />
             <Route path="bills" element={<BillsByRole />} />
             <Route path="recharges" element={<RequireReseller><Recharges /></RequireReseller>} />

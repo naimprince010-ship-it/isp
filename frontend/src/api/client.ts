@@ -212,6 +212,22 @@ export const newClientRequest = {
     api<{ id: string; message: string }>('/new-client-request', { method: 'POST', body: JSON.stringify(data) }),
 };
 
+export const tasks = {
+  list: (params?: { date?: string; status?: string; history?: boolean }) => {
+    const p = params || {};
+    const q = new URLSearchParams();
+    if (p.date) q.set('date', p.date);
+    if (p.status) q.set('status', p.status);
+    if (p.history) q.set('history', 'true');
+    return api<unknown[]>(`/tasks${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  create: (data: { title: string; description?: string; dueDate: string; priority?: string; assignedToId?: string }) =>
+    api('/tasks', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: { title?: string; description?: string; dueDate?: string; status?: string; priority?: string; assignedToId?: string }) =>
+    api(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => api<{ ok: boolean }>(`/tasks/${id}`, { method: 'DELETE' }),
+};
+
 export const inventory = {
   list: () => api<unknown[]>('/inventory'),
   create: (data: Record<string, unknown>) => api('/inventory', { method: 'POST', body: JSON.stringify(data) }),
