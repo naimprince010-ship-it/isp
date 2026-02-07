@@ -218,3 +218,31 @@ export const inventory = {
   update: (id: string, data: Record<string, unknown>) => api(`/inventory/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: (id: string) => api<{ ok: boolean }>(`/inventory/${id}`, { method: 'DELETE' }),
 };
+
+export const hr = {
+  departments: () => api<unknown[]>('/hr/departments'),
+  createDepartment: (data: { name: string; description?: string }) => api('/hr/departments', { method: 'POST', body: JSON.stringify(data) }),
+  updateDepartment: (id: string, data: { name?: string; description?: string; isActive?: boolean }) => api(`/hr/departments/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  designations: () => api<unknown[]>('/hr/designations'),
+  createDesignation: (data: { name: string; departmentId?: string }) => api('/hr/designations', { method: 'POST', body: JSON.stringify(data) }),
+  updateDesignation: (id: string, data: { name?: string; departmentId?: string; isActive?: boolean }) => api(`/hr/designations/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  employees: () => api<unknown[]>('/hr/employees'),
+  createEmployee: (data: Record<string, unknown>) => api('/hr/employees', { method: 'POST', body: JSON.stringify(data) }),
+  linkEmployeeUser: (data: Record<string, unknown>) => api('/hr/employees/link-user', { method: 'POST', body: JSON.stringify(data) }),
+  employeeProfile: (id: string) => api<unknown>(`/hr/employees/${id}`),
+  updateEmployee: (id: string, data: Record<string, unknown>) => api(`/hr/employees/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  salaries: (month?: number, year?: number) => api<unknown[]>(`/hr/salaries${month && year ? `?month=${month}&year=${year}` : ''}`),
+  generateSalaries: (month: number, year: number) => api<{ generated: number }>('/hr/salaries/generate', { method: 'POST', body: JSON.stringify({ month, year }) }),
+  updateSalary: (id: string, data: { bonus?: number; overtime?: number; incentive?: number; deductions?: number; notes?: string }) => api(`/hr/salaries/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  paySalary: (id: string) => api(`/hr/salaries/${id}/pay`, { method: 'PATCH' }),
+  attendance: (month?: number, year?: number, employeeId?: string) => {
+    const p: string[] = [];
+    if (month) p.push(`month=${month}`);
+    if (year) p.push(`year=${year}`);
+    if (employeeId) p.push(`employeeId=${employeeId}`);
+    return api<unknown[]>(`/hr/attendance${p.length ? '?' + p.join('&') : ''}`);
+  },
+  addAttendance: (data: { employeeId: string; date: string; checkIn?: string; checkOut?: string; status?: string; notes?: string }) => api('/hr/attendance', { method: 'POST', body: JSON.stringify(data) }),
+  appraisals: (employeeId?: string) => api<unknown[]>(`/hr/appraisals${employeeId ? `?employeeId=${employeeId}` : ''}`),
+  createAppraisal: (data: { employeeId: string; periodFrom: string; periodTo: string; rating: number; comments?: string }) => api('/hr/appraisals', { method: 'POST', body: JSON.stringify(data) }),
+};

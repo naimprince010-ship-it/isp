@@ -19,6 +19,13 @@ import NewClientRequests from './pages/NewClientRequests';
 import ScheduleRules from './pages/ScheduleRules';
 import AdminBilling from './pages/AdminBilling';
 import PendingApprovals from './pages/PendingApprovals';
+import HRDepartments from './pages/HRDepartments';
+import HRDesignations from './pages/HRDesignations';
+import HREmployees from './pages/HREmployees';
+import HREmployeeProfile from './pages/HREmployeeProfile';
+import HRSalary from './pages/HRSalary';
+import HRAttendance from './pages/HRAttendance';
+import HRPerformance from './pages/HRPerformance';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -92,6 +99,13 @@ export default function App() {
             <Route path="reports" element={<RequireAdmin><Reports /></RequireAdmin>} />
             <Route path="upstream" element={<RequireAdmin><Upstream /></RequireAdmin>} />
             <Route path="inventory" element={<RequireAdmin><Inventory /></RequireAdmin>} />
+            <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
+            <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />
+            <Route path="hr/employees" element={<RequireAdmin><HREmployees /></RequireAdmin>} />
+            <Route path="hr/employees/:id" element={<RequireAdmin><HREmployeeProfile /></RequireAdmin>} />
+            <Route path="hr/salary" element={<RequireAdmin><HRSalary /></RequireAdmin>} />
+            <Route path="hr/attendance" element={<RequireAdmin><HRAttendance /></RequireAdmin>} />
+            <Route path="hr/performance" element={<RequireAdmin><HRPerformance /></RequireAdmin>} />
             <Route path="customers" element={<RequireReseller><Customers /></RequireReseller>} />
             <Route path="bills" element={<BillsByRole />} />
             <Route path="recharges" element={<RequireReseller><Recharges /></RequireReseller>} />

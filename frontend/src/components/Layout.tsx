@@ -27,6 +27,12 @@ export default function Layout() {
       { label: 'SMS', path: '/sms' },
       { label: 'Reports', path: '/reports' },
       { label: 'Inventory', path: '/inventory' },
+      { label: 'Departments', path: '/hr/departments' },
+      { label: 'Designations', path: '/hr/designations' },
+      { label: 'Employees', path: '/hr/employees' },
+      { label: 'Salary', path: '/hr/salary' },
+      { label: 'Attendance', path: '/hr/attendance' },
+      { label: 'Performance', path: '/hr/performance' },
     ],
     RESELLER: [
       { label: 'Dashboard', path: '/' },

@@ -84,6 +84,7 @@ model User {
 
   // Employee: assigned customers (when role = EMPLOYEE)
   assignedCustomers CustomerProfile[] @relation("AssignedToEmployee")
+  employeeProfile   EmployeeProfile?
 }
 
 model ResellerProfile {
@@ -347,6 +348,110 @@ model CustomerRequest {
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
   @@map("customer_requests")
+}
+
+// HR & Payroll
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @map("name")
+  description String?  @map("description")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  designations Designation[]
+  employees    EmployeeProfile[]
+  @@map("departments")
+}
+
+model Designation {
+  id           String   @id @default(cuid())
+  name         String   @map("name")
+  departmentId String?  @map("department_id")
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  employees EmployeeProfile[]
+  @@map("designations")
+}
+
+model EmployeeProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  departmentId  String?   @map("department_id")
+  department    Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  designationId String?   @map("designation_id")
+  designation   Designation? @relation(fields: [designationId], references: [id], onDelete: SetNull)
+  employeeCode  String?   @map("employee_code")
+  joinDate      DateTime  @map("join_date")
+  basicSalary   Decimal   @default(0) @map("basic_salary")
+  bankAccount   String?   @map("bank_account")
+  nid           String?   @map("nid")
+  address       String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  salaries    Salary[]
+  attendances Attendance[]
+  appraisals  PerformanceAppraisal[]
+  @@map("employee_profiles")
+}
+
+model Salary {
+  id          String    @id @default(cuid())
+  employeeId  String    @map("employee_id")
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  month       Int       @map("month")
+  year        Int       @map("year")
+  baseAmount  Decimal   @default(0) @map("base_amount")
+  bonus       Decimal   @default(0) @map("bonus")
+  overtime    Decimal   @default(0) @map("overtime")
+  incentive   Decimal   @default(0) @map("incentive")
+  deductions  Decimal   @default(0) @map("deductions")
+  netAmount   Decimal   @default(0) @map("net_amount")
+  status      String    @default("PENDING") @map("status") // PENDING, PAID
+  paidAt      DateTime? @map("paid_at")
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([employeeId, month, year])
+  @@map("salaries")
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  employeeId  String    @map("employee_id")
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        DateTime  @map("date")
+  checkIn     DateTime? @map("check_in")
+  checkOut    DateTime? @map("check_out")
+  status      String    @default("PRESENT") @map("status") // PRESENT, ABSENT, LEAVE, HALF_DAY, LATE
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([employeeId, date])
+  @@map("attendances")
+}
+
+model PerformanceAppraisal {
+  id          String    @id @default(cuid())
+  employeeId  String    @map("employee_id")
+  employee    EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodFrom  DateTime  @map("period_from")
+  periodTo    DateTime  @map("period_to")
+  rating      Decimal   @map("rating") // 1-5 or percentage
+  comments    String?
+  reviewedBy  String?   @map("reviewed_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("performance_appraisals")
 }
 
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
