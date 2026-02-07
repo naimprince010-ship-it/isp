@@ -28,6 +28,7 @@ export default function Layout() {
       { label: 'Reports', path: '/reports' },
       { label: 'Inventory', path: '/inventory' },
       { label: 'Sales & Service', path: '/sales' },
+      { label: 'Purchase Management', path: '/purchase' },
       { label: 'Departments', path: '/hr/departments' },
       { label: 'Designations', path: '/hr/designations' },
       { label: 'Employees', path: '/hr/employees' },

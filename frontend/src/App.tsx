@@ -28,6 +28,7 @@ import HRAttendance from './pages/HRAttendance';
 import HRPerformance from './pages/HRPerformance';
 import Tasks from './pages/Tasks';
 import SalesService from './pages/SalesService';
+import PurchaseManagement from './pages/PurchaseManagement';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -109,6 +110,7 @@ export default function App() {
             <Route path="upstream" element={<RequireAdmin><Upstream /></RequireAdmin>} />
             <Route path="inventory" element={<RequireAdmin><Inventory /></RequireAdmin>} />
             <Route path="sales" element={<RequireAdminOrReseller><SalesService /></RequireAdminOrReseller>} />
+            <Route path="purchase" element={<RequireAdmin><PurchaseManagement /></RequireAdmin>} />
             <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
             <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />
             <Route path="hr/employees" element={<RequireAdmin><HREmployees /></RequireAdmin>} />

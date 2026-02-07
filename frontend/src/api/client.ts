@@ -249,6 +249,25 @@ export const sales = {
   serviceInvoice: (id: string) => api<unknown>(`/sales/service-invoices/${id}`),
 };
 
+export const purchase = {
+  vendors: (activeOnly?: boolean) => api<unknown[]>(`/purchase/vendors${activeOnly === false ? '/all' : ''}`),
+  createVendor: (data: { name: string; contactPerson?: string; phone?: string; email?: string; address?: string; notes?: string }) =>
+    api('/purchase/vendors', { method: 'POST', body: JSON.stringify(data) }),
+  updateVendor: (id: string, data: { name?: string; contactPerson?: string; phone?: string; email?: string; address?: string; notes?: string; isActive?: boolean }) =>
+    api(`/purchase/vendors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  requisitions: (status?: string) => api<unknown[]>(`/purchase/requisitions${status ? `?status=${status}` : ''}`),
+  createRequisition: (data: { items: { productName: string; quantity: number; unit?: string; estimatedRate?: number }[]; notes?: string }) =>
+    api('/purchase/requisitions', { method: 'POST', body: JSON.stringify(data) }),
+  updateRequisitionStatus: (id: string, status: string) =>
+    api(`/purchase/requisitions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  purchaseBills: (status?: string) => api<unknown[]>(`/purchase/purchase-bills${status ? `?status=${status}` : ''}`),
+  createPurchaseBill: (data: { vendorId: string; requisitionId?: string; items: { productName: string; quantity: number; unit?: string; rate: number }[]; notes?: string }) =>
+    api('/purchase/purchase-bills', { method: 'POST', body: JSON.stringify(data) }),
+  purchaseBill: (id: string) => api<unknown>(`/purchase/purchase-bills/${id}`),
+  updatePurchaseBillStatus: (id: string, status: string) =>
+    api(`/purchase/purchase-bills/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+};
+
 export const hr = {
   departments: () => api<unknown[]>('/hr/departments'),
   createDepartment: (data: { name: string; description?: string }) => api('/hr/departments', { method: 'POST', body: JSON.stringify(data) }),

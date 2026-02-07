@@ -529,6 +529,68 @@ model Task {
   @@map("tasks")
 }
 
+// Purchase Management – vendors, requisitions, purchase bills
+model Vendor {
+  id            String   @id @default(cuid())
+  name          String   @map("name")
+  contactPerson String?  @map("contact_person")
+  phone         String?  @map("phone")
+  email         String?  @map("email")
+  address       String?  @map("address")
+  notes         String?  @map("notes")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  purchaseBills PurchaseBill[]
+  @@map("vendors")
+}
+
+model Requisition {
+  id                String   @id @default(cuid())
+  requisitionNumber String   @unique @map("requisition_number")
+  requestedBy       String?  @map("requested_by") // userId
+  status            String   @default("DRAFT") @map("status") // DRAFT, PENDING, APPROVED, REJECTED
+  notes             String?  @map("notes")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  items     RequisitionItem[]
+  purchases PurchaseBill[]
+  @@map("requisitions")
+}
+
+model RequisitionItem {
+  id              String     @id @default(cuid())
+  requisitionId   String     @map("requisition_id")
+  requisition     Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  productName     String     @map("product_name")
+  quantity        Decimal    @map("quantity")
+  unit            String?    @default("pcs") @map("unit")
+  estimatedRate   Decimal?   @map("estimated_rate")
+  notes           String?    @map("notes")
+
+  @@map("requisition_items")
+}
+
+model PurchaseBill {
+  id             String    @id @default(cuid())
+  billNumber     String    @map("bill_number")
+  vendorId       String    @map("vendor_id")
+  vendor         Vendor    @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  requisitionId  String?   @map("requisition_id")
+  requisition    Requisition? @relation(fields: [requisitionId], references: [id], onDelete: SetNull)
+  date           DateTime  @map("date")
+  items          Json      @map("items") // [{productName, quantity, unit, rate, amount}]
+  totalAmount    Decimal   @map("total_amount")
+  status         String    @default("PENDING") @map("status") // DRAFT, PENDING, RECEIVED, PAID
+  notes          String?   @map("notes")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("purchase_bills")
+}
+
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
 model NewClientRequest {
   id                String        @id @default(cuid())

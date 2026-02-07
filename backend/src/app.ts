@@ -16,6 +16,7 @@ import { publicPayRouter } from './routes/publicPay.js';
 import { hrRouter } from './routes/hr.js';
 import { tasksRouter } from './routes/tasks.js';
 import { salesRouter } from './routes/sales.js';
+import { purchaseRouter } from './routes/purchase.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api/public', publicPayRouter);
 app.use('/api/hr', hrRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/sales', salesRouter);
+app.use('/api/purchase', purchaseRouter);
 
 app.get('/', (_, res) => res.json({ name: 'ISP Management API', health: '/api/health', docs: 'Use /api/* routes for auth, admin, reseller, customer, etc.' }));
 app.get('/api/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
