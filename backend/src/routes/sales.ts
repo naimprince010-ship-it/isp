@@ -109,7 +109,7 @@ router.post('/product-invoices', [
     if (!errors.isEmpty()) throw new AppError(400, errors.array()[0].msg);
     const items = req.body.items as { productName: string; quantity: number; rate: number }[];
     const totalAmount = items.reduce((s, i) => s + i.quantity * i.rate, 0);
-    const invNum = await nextInvoiceNumber('PINV');
+    const invNum = await nextProductInvoiceNumber();
     const inv = await prisma.productInvoice.create({
       data: {
         invoiceNumber: invNum,
