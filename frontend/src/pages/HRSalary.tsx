@@ -23,6 +23,12 @@ export default function HRSalary() {
     hr.generateSalaries(month, year).then(() => load()).catch(() => {}).finally(() => setGenSubmitting(false));
   };
 
+  const handleEditSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editSal) return;
+    hr.updateSalary(editSal.id, { bonus: parseFloat(editForm.bonus) || 0, overtime: parseFloat(editForm.overtime) || 0, incentive: parseFloat(editForm.incentive) || 0, deductions: parseFloat(editForm.deductions) || 0 }).then(() => { setEditSal(null); load(); }).catch(() => {});
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   return (
     <div className="dashboard">
