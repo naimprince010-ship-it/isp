@@ -228,6 +228,31 @@ export const tasks = {
   delete: (id: string) => api<{ ok: boolean }>(`/tasks/${id}`, { method: 'DELETE' }),
 };
 
+export const bandwidth = {
+  items: (all?: boolean) => api<unknown[]>(`/bandwidth/items${all ? '/all' : ''}`),
+  createItem: (data: { name: string; capacityMbps?: number; unit?: string; description?: string }) =>
+    api('/bandwidth/items', { method: 'POST', body: JSON.stringify(data) }),
+  updateItem: (id: string, data: { name?: string; capacityMbps?: number; unit?: string; description?: string; isActive?: boolean }) =>
+    api(`/bandwidth/items/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  providers: (all?: boolean) => api<unknown[]>(`/bandwidth/providers${all ? '/all' : ''}`),
+  providersLedger: () => api<unknown[]>('/bandwidth/providers/ledger'),
+  createProvider: (data: { name: string; contactPerson?: string; phone?: string; email?: string; address?: string; notes?: string }) =>
+    api('/bandwidth/providers', { method: 'POST', body: JSON.stringify(data) }),
+  updateProvider: (id: string, data: { name?: string; contactPerson?: string; phone?: string; email?: string; address?: string; notes?: string; isActive?: boolean }) =>
+    api(`/bandwidth/providers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  bills: (params?: { month?: number; year?: number; status?: string; providerId?: string }) => {
+    const q = new URLSearchParams(params as Record<string, string>).toString();
+    return api<unknown[]>(`/bandwidth/bills${q ? `?${q}` : ''}`);
+  },
+  createBill: (data: { providerId: string; date: string; amount: number; periodStart?: string; periodEnd?: string; dueDate?: string; items?: unknown[]; notes?: string }) =>
+    api('/bandwidth/bills', { method: 'POST', body: JSON.stringify(data) }),
+  bill: (id: string) => api<unknown>(`/bandwidth/bills/${id}`),
+  payBill: (billId: string, data: { amount: number; paymentDate: string; method: string; trxId?: string; notes?: string }) =>
+    api(`/bandwidth/bills/${billId}/payments`, { method: 'POST', body: JSON.stringify(data) }),
+  history: (month?: number, year?: number) =>
+    api<{ bills: unknown[]; payments: unknown[]; totalBills: number; totalPayments: number; summary: unknown }>(`/bandwidth/history${month && year ? `?month=${month}&year=${year}` : ''}`),
+};
+
 export const assets = {
   list: (status?: string) => api<unknown[]>(`/assets${status ? `?status=${status}` : ''}`),
   create: (data: { name: string; category: string; purchaseDate?: string; value?: number; location?: string; notes?: string }) =>
