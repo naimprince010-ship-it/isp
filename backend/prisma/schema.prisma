@@ -638,6 +638,24 @@ model FinancialTransaction {
   @@map("financial_transactions")
 }
 
+// Asset Management – maintain asset list, record destroyed items
+model Asset {
+  id            String    @id @default(cuid())
+  name          String    @map("name")
+  category      String    @map("category") // EQUIPMENT, FURNITURE, VEHICLE, ELECTRONICS, OTHER
+  purchaseDate  DateTime? @map("purchase_date")
+  value         Decimal?  @map("value")
+  location      String?   @map("location")
+  status        String    @default("ACTIVE") @map("status") // ACTIVE, DESTROYED
+  destroyedDate DateTime? @map("destroyed_date")
+  destroyReason String?   @map("destroy_reason")
+  notes         String?   @map("notes")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("assets")
+}
+
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
 model NewClientRequest {
   id                String        @id @default(cuid())

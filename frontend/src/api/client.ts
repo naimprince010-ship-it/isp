@@ -228,6 +228,17 @@ export const tasks = {
   delete: (id: string) => api<{ ok: boolean }>(`/tasks/${id}`, { method: 'DELETE' }),
 };
 
+export const assets = {
+  list: (status?: string) => api<unknown[]>(`/assets${status ? `?status=${status}` : ''}`),
+  create: (data: { name: string; category: string; purchaseDate?: string; value?: number; location?: string; notes?: string }) =>
+    api('/assets', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: { name?: string; category?: string; purchaseDate?: string; value?: number; location?: string; notes?: string }) =>
+    api(`/assets/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  destroy: (id: string, destroyReason?: string) =>
+    api(`/assets/${id}/destroy`, { method: 'PATCH', body: JSON.stringify({ destroyReason }) }),
+  destroyed: () => api<unknown[]>('/assets/destroyed'),
+};
+
 export const inventory = {
   list: () => api<unknown[]>('/inventory'),
   create: (data: Record<string, unknown>) => api('/inventory', { method: 'POST', body: JSON.stringify(data) }),

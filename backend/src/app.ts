@@ -19,6 +19,7 @@ import { salesRouter } from './routes/sales.js';
 import { purchaseRouter } from './routes/purchase.js';
 import { networkRouter } from './routes/network.js';
 import { accountsRouter } from './routes/accounts.js';
+import { assetsRouter } from './routes/assets.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/sales', salesRouter);
 app.use('/api/purchase', purchaseRouter);
 app.use('/api/network', networkRouter);
 app.use('/api/accounts', accountsRouter);
+app.use('/api/assets', assetsRouter);
 
 app.get('/', (_, res) => res.json({ name: 'ISP Management API', health: '/api/health', docs: 'Use /api/* routes for auth, admin, reseller, customer, etc.' }));
 app.get('/api/health', (_, res) => res.json({ ok: true, ts: new Date().toISOString() }));
