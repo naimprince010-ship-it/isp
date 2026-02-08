@@ -33,6 +33,7 @@ import NetworkDiagram from './pages/NetworkDiagram';
 import AccountsManagement from './pages/AccountsManagement';
 import AssetManagement from './pages/AssetManagement';
 import BandwidthPurchase from './pages/BandwidthPurchase';
+import BandwidthSales from './pages/BandwidthSales';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -124,6 +125,7 @@ export default function App() {
             <Route path="accounts" element={<RequireAdmin><AccountsManagement /></RequireAdmin>} />
             <Route path="assets" element={<RequireAdmin><AssetManagement /></RequireAdmin>} />
             <Route path="bandwidth" element={<RequireAdmin><BandwidthPurchase /></RequireAdmin>} />
+            <Route path="bandwidth-sales" element={<RequireAdmin><BandwidthSales /></RequireAdmin>} />
             <Route path="network" element={<RequireNetworkAccess><NetworkDiagram /></RequireNetworkAccess>} />
             <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
             <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />

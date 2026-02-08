@@ -253,6 +253,26 @@ export const bandwidth = {
     api<{ bills: unknown[]; payments: unknown[]; totalBills: number; totalPayments: number; summary: unknown }>(`/bandwidth/history${month && year ? `?month=${month}&year=${year}` : ''}`),
 };
 
+export const bandwidthSales = {
+  resellers: (all?: boolean) => api<unknown[]>(`/bandwidth-sales/resellers${all ? '/all' : ''}`),
+  resellersLedger: () => api<unknown[]>('/bandwidth-sales/resellers/ledger'),
+  createReseller: (data: { name: string; email?: string; phone?: string; address?: string; resellerProfileId?: string; notes?: string }) =>
+    api('/bandwidth-sales/resellers', { method: 'POST', body: JSON.stringify(data) }),
+  updateReseller: (id: string, data: { name?: string; email?: string; phone?: string; address?: string; notes?: string; isActive?: boolean }) =>
+    api(`/bandwidth-sales/resellers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  invoices: (params?: { month?: number; year?: number; status?: string; resellerId?: string }) => {
+    const q = new URLSearchParams(params as Record<string, string>).toString();
+    return api<unknown[]>(`/bandwidth-sales/invoices${q ? `?${q}` : ''}`);
+  },
+  createInvoice: (data: { bandwidthResellerId: string; date: string; amount: number; periodStart?: string; periodEnd?: string; dueDate?: string; description?: string }) =>
+    api('/bandwidth-sales/invoices', { method: 'POST', body: JSON.stringify(data) }),
+  invoice: (id: string) => api<unknown>(`/bandwidth-sales/invoices/${id}`),
+  sendInvoiceEmail: (id: string) => api<{ ok: boolean; message: string }>(`/bandwidth-sales/invoices/${id}/send-email`, { method: 'POST' }),
+  sendInvoiceSms: (id: string) => api<{ ok: boolean; message: string }>(`/bandwidth-sales/invoices/${id}/send-sms`, { method: 'POST' }),
+  receivePayment: (invoiceId: string, data: { amount: number; paymentDate: string; method: string; trxId?: string; notes?: string }) =>
+    api(`/bandwidth-sales/invoices/${invoiceId}/payments`, { method: 'POST', body: JSON.stringify(data) }),
+};
+
 export const assets = {
   list: (status?: string) => api<unknown[]>(`/assets${status ? `?status=${status}` : ''}`),
   create: (data: { name: string; category: string; purchaseDate?: string; value?: number; location?: string; notes?: string }) =>

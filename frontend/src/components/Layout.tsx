@@ -33,6 +33,7 @@ export default function Layout() {
       { label: 'Accounts Management', path: '/accounts' },
       { label: 'Asset Management', path: '/assets' },
       { label: 'Bandwidth Purchase', path: '/bandwidth' },
+      { label: 'Bandwidth Sales', path: '/bandwidth-sales' },
       { label: 'Departments', path: '/hr/departments' },
       { label: 'Designations', path: '/hr/designations' },
       { label: 'Employees', path: '/hr/employees' },

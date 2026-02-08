@@ -112,6 +112,7 @@ model ResellerProfile {
   expenses          Expense[]         @relation("ResellerExpense")
   productInvoices   ProductInvoice[]
   serviceInvoices   ServiceInvoice[]
+  bandwidthReseller BandwidthReseller?
 }
 
 model CustomerProfile {
@@ -718,6 +719,59 @@ model BandwidthPayment {
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("bandwidth_payments")
+}
+
+// Bandwidth Sales – sell bandwidth to resellers, invoices, payments
+model BandwidthReseller {
+  id                 String   @id @default(cuid())
+  name               String   @map("name")
+  email              String?  @map("email")
+  phone              String?  @map("phone")
+  address            String?  @map("address")
+  resellerProfileId  String?  @unique @map("reseller_profile_id")
+  resellerProfile    ResellerProfile? @relation(fields: [resellerProfileId], references: [id], onDelete: SetNull)
+  notes              String?  @map("notes")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  invoices BandwidthSellInvoice[]
+  @@map("bandwidth_resellers")
+}
+
+model BandwidthSellInvoice {
+  id           String   @id @default(cuid())
+  invoiceNumber String  @unique @map("invoice_number")
+  bandwidthResellerId String @map("bandwidth_reseller_id")
+  bandwidthReseller   BandwidthReseller @relation(fields: [bandwidthResellerId], references: [id], onDelete: Restrict)
+  date         DateTime @map("date")
+  periodStart  DateTime? @map("period_start")
+  periodEnd    DateTime? @map("period_end")
+  amount       Decimal  @map("amount")
+  dueDate      DateTime? @map("due_date")
+  status       String   @default("PENDING") @map("status") // PENDING, PARTIAL, PAID
+  description  String?  @map("description")
+  sentEmailAt  DateTime? @map("sent_email_at")
+  sentSmsAt    DateTime? @map("sent_sms_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  payments BandwidthResellerPayment[]
+  @@map("bandwidth_sell_invoices")
+}
+
+model BandwidthResellerPayment {
+  id           String   @id @default(cuid())
+  invoiceId    String   @map("invoice_id")
+  invoice      BandwidthSellInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount       Decimal  @map("amount")
+  paymentDate  DateTime @map("payment_date")
+  method       String   @map("method")
+  trxId        String?  @map("trx_id")
+  notes        String?  @map("notes")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("bandwidth_reseller_payments")
 }
 
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
