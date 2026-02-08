@@ -30,6 +30,7 @@ import Tasks from './pages/Tasks';
 import SalesService from './pages/SalesService';
 import PurchaseManagement from './pages/PurchaseManagement';
 import NetworkDiagram from './pages/NetworkDiagram';
+import AccountsManagement from './pages/AccountsManagement';
 import Customers from './pages/Customers';
 import Bills from './pages/Bills';
 import Recharges from './pages/Recharges';
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="inventory" element={<RequireAdmin><Inventory /></RequireAdmin>} />
             <Route path="sales" element={<RequireAdminOrReseller><SalesService /></RequireAdminOrReseller>} />
             <Route path="purchase" element={<RequireAdmin><PurchaseManagement /></RequireAdmin>} />
+            <Route path="accounts" element={<RequireAdmin><AccountsManagement /></RequireAdmin>} />
             <Route path="network" element={<RequireNetworkAccess><NetworkDiagram /></RequireNetworkAccess>} />
             <Route path="hr/departments" element={<RequireAdmin><HRDepartments /></RequireAdmin>} />
             <Route path="hr/designations" element={<RequireAdmin><HRDesignations /></RequireAdmin>} />

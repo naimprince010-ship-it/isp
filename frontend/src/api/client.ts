@@ -249,6 +249,27 @@ export const sales = {
   serviceInvoice: (id: string) => api<unknown>(`/sales/service-invoices/${id}`),
 };
 
+export const accounts = {
+  accounts: (all?: boolean) => api<unknown[]>(`/accounts/accounts${all ? '/all' : ''}`),
+  createAccount: (data: { name: string; type: string; openingBalance?: number; notes?: string }) =>
+    api('/accounts/accounts', { method: 'POST', body: JSON.stringify(data) }),
+  updateAccount: (id: string, data: { name?: string; openingBalance?: number; notes?: string; isActive?: boolean }) =>
+    api(`/accounts/accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  categories: (type?: string) => api<unknown[]>(`/accounts/categories${type ? `?type=${type}` : ''}`),
+  createCategory: (data: { name: string; type: string }) =>
+    api('/accounts/categories', { method: 'POST', body: JSON.stringify(data) }),
+  transactions: (params?: { month?: number; year?: number; type?: string; accountId?: string }) => {
+    const q = new URLSearchParams(params as Record<string, string>).toString();
+    return api<unknown[]>(`/accounts/transactions${q ? `?${q}` : ''}`);
+  },
+  createTransaction: (data: { date: string; type: string; accountId: string; amount: number; categoryId?: string; transferToAccountId?: string; description?: string; voucherNo?: string }) =>
+    api('/accounts/transactions', { method: 'POST', body: JSON.stringify(data) }),
+  summary: (month?: number, year?: number) =>
+    api<{ totalCash: number; totalBank: number; totalIncome: number; totalExpense: number; profitLoss: number; accounts: unknown[] }>(`/accounts/summary${month && year ? `?month=${month}&year=${year}` : ''}`),
+  balanceSheet: (month?: number, year?: number) =>
+    api<{ cashAccounts: unknown[]; bankAccounts: unknown[]; totalCash: number; totalBank: number; totalAssets: number }>(`/accounts/balance-sheet${month && year ? `?month=${month}&year=${year}` : ''}`),
+};
+
 export const network = {
   diagram: () => api<{ pops: unknown[]; clients: unknown[]; connections: unknown[]; inventoryByLocation: unknown[]; inventory: unknown[] }>('/network/diagram'),
 };

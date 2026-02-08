@@ -591,6 +591,53 @@ model PurchaseBill {
   @@map("purchase_bills")
 }
 
+// Accounts Management – total accounts, income, expense, profit/loss, balance sheet
+model Account {
+  id             String   @id @default(cuid())
+  name           String   @map("name")
+  type           String   @map("type") // CASH, BANK
+  openingBalance Decimal  @default(0) @map("opening_balance")
+  notes          String?  @map("notes")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  transactionsFrom   FinancialTransaction[] @relation("AccountFrom")
+  transactionsTo     FinancialTransaction[] @relation("AccountTo")
+  @@map("accounts")
+}
+
+model TransactionCategory {
+  id        String   @id @default(cuid())
+  name      String   @map("name")
+  type      String   @map("type") // INCOME, EXPENSE
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transactions FinancialTransaction[]
+  @@map("transaction_categories")
+}
+
+model FinancialTransaction {
+  id                 String   @id @default(cuid())
+  date               DateTime @map("date")
+  type               String   @map("type") // INCOME, EXPENSE, TRANSFER
+  categoryId         String?  @map("category_id")
+  category           TransactionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  accountId          String   @map("account_id")
+  account            Account  @relation("AccountFrom", fields: [accountId], references: [id], onDelete: Restrict)
+  transferToAccountId String? @map("transfer_to_account_id")
+  transferToAccount  Account? @relation("AccountTo", fields: [transferToAccountId], references: [id], onDelete: SetNull)
+  amount             Decimal  @map("amount")
+  description        String?  @map("description")
+  voucherNo          String?  @map("voucher_no")
+  createdById        String?  @map("created_by_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("financial_transactions")
+}
+
 // Add New Client Request – request to add a new client; admin approves then User+CustomerProfile created
 model NewClientRequest {
   id                String        @id @default(cuid())
